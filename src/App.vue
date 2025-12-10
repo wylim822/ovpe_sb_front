@@ -1,16 +1,19 @@
 <template>
   <div id="app">
-    <TodoList />
+    <!--<TodoList />-->
+    <VhclRpt/>
   </div>
 </template>
 
 <script>
-import TodoList from './components/TodoList.vue'
+//import TodoList from './components/TodoList.vue'
+import VhclRpt from './components/VhclRpt.vue'
 
 export default {
   name: 'App',
   components: {
-    TodoList
+    //TodoList
+    VhclRpt
   }
 }
 </script>
@@ -30,6 +33,5 @@ body {
 
 #app {
   min-height: 100vh;
-  padding: 20px 0;
 }
 </style>
