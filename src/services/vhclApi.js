@@ -11,8 +11,8 @@ const vhclApi = axios.create({
 })
 
 export default {
-    // 차량번호 조회
-    srchVhcl(carRegNo){
-        return vhclApi.post('/srchVhcl', {carRegNo})
+    // 차량번호 분석
+    anlsCarRegNo(carRegNo){
+        return vhclApi.post('/anlsCarRegNo', {carRegNo})
     }
 }

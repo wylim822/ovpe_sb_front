@@ -19,9 +19,9 @@
             type="text"
             placeholder="예: 12가 3456"
             class="plate-input"
-            @keyup.enter="srchVhcl"
+            @keyup.enter="anlsCarRegNo"
           />
-          <button class="btn-search" @click="srchVhcl">조회</button>
+          <button class="btn-search" @click="anlsCarRegNo">조회</button>
         </div>
       </div>
     </section>
@@ -328,10 +328,10 @@
 
 
 <script>
-import vhclSrchApi from '../services/vhclSrchApi'
+import vhclApi from '../services/vhclApi'
 
 export default {
-  name: "VhclRpt",
+  name: "VhclAnls",
   data() {
     return {
       carRegNo: "",
@@ -345,7 +345,7 @@ export default {
     }
   },
   methods: {
-    async srchVhcl() {
+    async anlsCarRegNo() {
       if (!this.carRegNo.trim()) {
         alert("차량번호를 입력하세요.");
         return
@@ -361,7 +361,7 @@ export default {
       this.result = null;
 
       try {
-        const response = await vhclSrchApi.srchVhcl(this.carRegNo);
+        const response = await vhclApi.anlsCarRegNo(this.carRegNo);
         
         this.result = response.data;
         // 차량정보 조회 결과
