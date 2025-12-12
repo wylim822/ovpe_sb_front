@@ -1,5 +1,4 @@
-const { defineConfig } = require('@vue/cli-service')
-module.exports = defineConfig({
+module.exports = {
   transpileDependencies: true,
   devServer: {
     port: 9090,
@@ -7,8 +6,8 @@ module.exports = defineConfig({
       '/vhcl': {
         target: 'http://localhost:3002',
         changeOrigin: true,
-        ws: true
+        ws: true,
       }
     }
   }
-})
+};
