@@ -311,9 +311,37 @@
           AI 차량 분석 리포트
         </div>
 
-        <p class="ai-report">
-          {{ apiInfo.summary }}
-        </p>
+        <div v-if="apiInfo && Object.keys(apiInfo).length > 0">
+          <textarea
+            class="apiText"
+            v-model="systemMsg"
+            rows="10"
+            readonly
+          ></textarea>
+
+          <textarea
+            class="apiText"
+            v-model="userMsg"
+            rows="6"
+            readonly
+          ></textarea>
+          
+          <div class="btn-api-wrap">
+            <button class="btn-api" @click="callApiTest">
+            API 호출
+            </button>
+          </div>
+
+          <!-- !!API 호출 결과 (추후 사용) -->
+          <!-- <p class="ai-report">
+            {{ apiInfo }}
+          </p> -->
+        </div>
+         
+        <!-- 분석 결과 없음 -->
+        <div v-if="!apiInfo || Object.keys(apiInfo).length === 0" class="empty-msg">
+          API 분석 결과가 없습니다.
+        </div>
       </div>
     </div>
 
@@ -340,8 +368,12 @@ export default {
       error: null,
 
       vhclInfo: null,     // 차량 등록정보
-      inspInfoList: [], // 차량 검사정보 (리스트)
-      apiInfo: {}       // GPT 결과
+      inspInfoList: [],   // 차량 검사정보 (리스트)
+      apiInfo: {},        // GPT 결과
+
+      // @@API 호출 전 호출메시지 확인용
+      systemMsg: "",      // GPT 결과 - 시스템 메시지
+      userMsg: "",        // GPT 결과 - 사용자 메시짖
     }
   },
   methods: {
@@ -371,6 +403,10 @@ export default {
         // API 호출 결과 (!!작업필요)
         this.apiInfo = response.data.apiInfo;
 
+        //this.systemMsg = response.data.apiInfo.systemMsg ? JSON.stringify(response.data.apiInfo.systemMsg, null, 2) : "";
+        this.systemMsg = response.data.apiInfo.systemMsg;
+        this.userMsg = response.data.apiInfo.userMsg;
+
         //console.log("@@1: " + JSON.stringify(this.vhclInfo) + " / 2: " + JSON.stringify(this.inspInfoList) + " / 3: " + JSON.stringify(this.apiInfo));
         
       } catch (error) {
@@ -379,6 +415,15 @@ export default {
 
       } finally {
         this.loading = false;
+      }
+    },
+    // !!API 호출 테스트 - 추후 변경
+    async callApiTest(){
+      try {
+        // systemMsg = this.systemMsg;
+        // userMsg = this.userMsg;
+      } catch(e) {
+        console.error(e);
       }
     },
     // 차량번호 형식 정규식 검사
@@ -407,9 +452,9 @@ export default {
    HERO 영역
 ================================*/
 .hero {
-  background: linear-gradient(to bottom, rgba(12,12,12,1) 50%, rgba(12,12,12,0.0) 100%);
+  /* background: linear-gradient(to bottom, rgba(12,12,12,1) 50%, rgba(12,12,12,0.0) 100%); */
   color: #fff;
-  padding: 80px 20px 100px;
+  padding: 40px 20px 80px;
   text-align: center;
   overflow: hidden;
 }
@@ -424,6 +469,7 @@ export default {
   font-weight: 700;
   margin-bottom: 20px;
   letter-spacing: -0.5px;
+  color: #333;
 }
 
 .flicker {
@@ -441,6 +487,7 @@ export default {
   font-size: 17px;
   opacity: 0.85;
   margin-bottom: 40px;
+  color: #333;
 }
 
 /* ===============================
@@ -488,6 +535,25 @@ export default {
   transition: 0.2s;
 }
 .btn-search:hover {
+  background: #1878d8;
+}
+
+.btn-api-wrap {
+  margin-top: 10px;
+  text-align: right;
+}
+
+.btn-api {
+  background: #1e90ff;
+  color: #fff;
+  padding: 8px 14px;
+  font-size: 14px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+.btn-api:hover {
   background: #1878d8;
 }
 
@@ -548,7 +614,7 @@ export default {
 ================================*/
 .info-table {
   display: grid;
-  grid-template-columns: 180px 1fr 180px 1fr;  /* ✅ 4열 구조 */
+  grid-template-columns: 180px 1fr 180px 1fr;  /* 4열 구조 */
   row-gap: 10px;
   column-gap: 22px;
   padding: 8px 0 4px;
@@ -557,7 +623,7 @@ export default {
 
 .info-table.grid-4 {
   display: grid;
-  grid-template-columns: 180px 1fr 180px 1fr;  /* ✅ 4열 구조 */
+  grid-template-columns: 180px 1fr 180px 1fr;  /* 4열 구조 */
   column-gap: 22px;
   row-gap: 14px;
   padding: 8px 0 4px;
@@ -577,7 +643,6 @@ export default {
 }
 
 .info-value {
-  color: #1b2638; /* 진한 블루톤으로 고급스럽게 */
   padding: 6px 0;
   align-items:center;
   border-bottom: 1px solid #f3f5f7;
@@ -595,12 +660,11 @@ export default {
 .ai-report {
   white-space: pre-line;
   line-height: 1.6;
-  color: #324158;
 }
 
 /* Placeholder */
 .placeholder {
-  padding: 60px 20px;
+  padding: 40px 20px;
   text-align: center;
   color: #888;
   font-size: 17px;
@@ -653,7 +717,6 @@ export default {
   font-size: 14px;
   border-bottom: 1px solid #eef2f6;
   border-right: 1px solid #eef2f6;
-  color: #1b2638;
   white-space: nowrap;
 }
 
@@ -681,4 +744,15 @@ export default {
   border: 1px solid #eee;
 }
 
+.apiText {
+  width: 100%;
+  resize: vertical;
+  font-size: 15px;
+  font-family: inherit;
+  line-height: 1.5;
+  border-radius: 6px;
+  border: 1px solid #dcdcdc;
+  background: #fff;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
 </style>

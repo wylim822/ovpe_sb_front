@@ -91,7 +91,7 @@ export default {
   flex-direction: column;
   height: 100vh;
   background: #ffffff;
-  color: #222;
+  color: #333;
 }
  
 /* 상단 헤더 */
