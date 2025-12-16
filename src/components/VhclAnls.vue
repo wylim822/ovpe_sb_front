@@ -1,4 +1,4 @@
-<template>
+<template ref="resultTop">
   <div class="wrap">
 
     <!-- Hero 영역 -->
@@ -376,6 +376,18 @@ export default {
       userMsg: "",        // GPT 결과 - 사용자 메시짖
     }
   },
+
+  mounted() {
+    const vhrno = this.$route.query.vhrno;
+
+    if (vhrno) {
+      this.carRegNo = vhrno;
+      this.$nextTick(() => {
+        this.anlsCarRegNo();
+      });
+    }
+  },
+
   methods: {
     async anlsCarRegNo() {
       if (!this.carRegNo.trim()) {
@@ -415,6 +427,13 @@ export default {
 
       } finally {
         this.loading = false;
+
+        this.$nextTick(() => {
+          this.$refs.resultTop.scrollIntoView({
+            behavior: "smooth",
+            block: "start"
+          });
+        });
       }
     },
     // !!API 호출 테스트 - 추후 변경

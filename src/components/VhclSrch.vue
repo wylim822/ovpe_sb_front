@@ -61,7 +61,7 @@
                 :gridOptions="mainGridOptions"
                 :columnDefs="mainColDefs"
                 :rowData="mainGridData"
-                rowSelection="single"
+                :rowSelection="single"
                 :pagination="true"
                 :paginationPageSize="mainPageSize"
                 @rowClicked="onMainRowClick"
@@ -74,7 +74,7 @@
       </section>
 
       <!-- 서브 Grid -->
-      <section class="grid-section" v-show="subGridData.length > 0">
+      <section class="grid-section" v-show="subGridData.length > 0" ref="subGridSection">
         <div class="grid-card">
           <div class="grid-card-header">
             <h2 class="grid-title">선택 차량 상세 정보</h2>
@@ -92,6 +92,7 @@
                 :rowData="subGridData"
                 :pagination="true"
                 :paginationPageSize="mainPageSize"
+                @rowClicked="onSubRowClick"
                 @grid-ready="onSubGridReady"
                 style="width: 100%; height: 100%;"
               />
@@ -332,11 +333,20 @@ export default {
         this.subGridData = result || [];
 
         this.$nextTick(() => {
+          // 선택한 메인 그리드 row 가운데로 스크롤 이동
           if (this.selectedMainRowIndex !== null) {
             this.mainGridApi.ensureIndexVisible(
               this.selectedMainRowIndex,
               "middle"
             );
+          }
+
+          // 서브 그리드로 스크롤 이동
+          if (this.$refs.subGridSection) {
+            this.$refs.subGridSection.scrollIntoView({
+              behavior: "smooth",
+              block: "start"
+            });
           }
         });
       } catch (e) {
@@ -345,6 +355,18 @@ export default {
       } finally {
         this.loading = false;
       }
+    },
+
+    onSubRowClick(params) {
+      const vhrno = params.data.vhrno;
+      if (!vhrno) return;
+
+      const routeUrl = this.$router.resolve({
+        path: "/",
+        query: { vhrno }
+      }).href;
+
+      window.open(routeUrl, "_blank");
     }
 
   }
