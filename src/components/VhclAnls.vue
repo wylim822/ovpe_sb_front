@@ -19,23 +19,23 @@
             type="text"
             placeholder="예: 12가 3456"
             class="plate-input"
-            @keyup.enter="anlsCarRegNo"
+            @keyup.enter="vhclBscInfo"
           />
-          <button class="btn-search" @click="anlsCarRegNo">조회</button>
+          <button class="btn-search" @click="vhclBscInfo">조회</button>
         </div>
       </div>
     </section>
 
-    <!-- 로딩 -->
-    <div v-if="loading" class="loading fade-up">
-      조회 중입니다...
+    <!-- 로딩(기본정보 조회) -->
+    <div v-if="loadingBsc" class="loading fade-up">
+      차량 정보를 조회 중입니다...
     </div>
 
     <!-- 에러 메시지 -->
     <div v-if="error" class="error">{{ error }}</div>
 
     <!-- 결과 영역 -->
-    <div v-if="result" class="result-container fade-up delay-1">
+    <div v-if="!loadingBsc && (vhclInfo !== null || inspInfoList.length > 0 || isAnlsSkipped)" class="result-container fade-up delay-1">
 
       <!-- 차량 등록 정보 -->
       <div class="info-card">
@@ -44,7 +44,7 @@
           차량 등록 정보
         </div>
 
-        <div v-if="vhclInfo != null">
+        <div v-if="vhclInfo !== null">
           <div class="info-table">
             <div class="info-row">
               <div class="info-key">차량관리번호</div>
@@ -131,7 +131,7 @@
           </div>
         </div>
 
-        <!-- 조회 결과 없음 -->
+        <!-- 차량 등록정보 조회 결과 없음 -->
         <div v-if="vhclInfo == null" class="empty-msg">
           차량 등록 정보를 찾을 수 없습니다.
         </div>
@@ -298,7 +298,7 @@
           </div>
         </div>
 
-        <!-- 조회 결과 없음 -->
+        <!-- 차량 검사정보 조회 결과 없음 -->
         <div v-if="inspInfoList.length === 0" class="empty-msg">
           등록된 차량 검사 정보가 없습니다.
         </div>
@@ -311,42 +311,50 @@
           AI 차량 분석 리포트
         </div>
 
-        <div v-if="apiInfo && Object.keys(apiInfo).length > 0">
-          <textarea
-            class="apiText"
-            v-model="systemMsg"
-            rows="10"
-            readonly
-          ></textarea>
+        <!-- 차량 분석조회 로딩 -->
+        <div v-if="loadingAnls" class="loading-anls">
+          <div class="spinner"></div>
+          <p class="loading-text">AI가 차량 상태를 분석 중입니다...</p>
+        </div>  
 
-          <textarea
-            class="apiText"
-            v-model="userMsg"
-            rows="6"
-            readonly
-          ></textarea>
-          
+        <!-- 분석 미수행(검사결과 없음) -->
+        <div v-else-if="isAnlsSkipped" class="empty-msg">
+          검사정보가 없어 AI 차량분석을 수행할 수 없습니다.
+        </div>
+
+        <div v-else-if="apiInfo != null && apiInfo.userMsg">
+        <!-- <div v-else-if="apiInfo && apiInfo.anlsMsg"> -->
+          <textarea class="apiText" v-model="systemMsg" rows="10"></textarea>
+          <textarea class="apiText" v-model="userMsg" rows="6"></textarea>
+
           <div class="btn-api-wrap">
             <button class="btn-api" @click="callApiTest">
             API 호출
             </button>
           </div>
 
-          <!-- !!API 호출 결과 (추후 사용) -->
-          <!-- <p class="ai-report">
-            {{ apiInfo }}
-          </p> -->
+          <!-- API 호출 결과 (최종 분석) -->
+          <div v-if="anlsMsg !== ''" style="white-space: pre-wrap; line-height: 1.6;margin-top:20px">
+            <div class="info-key" style="font-size:18px">· AI 분석결과</div>
+            {{ anlsMsg }}
+          </div>
         </div>
-         
+
+        
+        
+        <div v-else-if="apiInfo != null && !apiInfo.userMsg" class="empty-msg">
+          현재 AI 분석 미지원 연료 차량입니다.
+        </div>
+
         <!-- 분석 결과 없음 -->
-        <div v-if="!apiInfo || Object.keys(apiInfo).length === 0" class="empty-msg">
+        <div v-else class="empty-msg">
           API 분석 결과가 없습니다.
         </div>
       </div>
     </div>
 
     <!-- 조회 전 안내 -->
-    <div v-if="!result && !loading" class="placeholder fade-up delay-1">
+    <div v-if="!loadingBsc && vhclInfo === null && inspInfoList.length === 0 && !isAnlsSkipped" class="placeholder fade-up delay-1">
       차량번호를 입력하면 차량 등록 정보 및 검사 정보와 AI 분석 내용을 확인할 수 있습니다.
     </div>
 
@@ -363,17 +371,21 @@ export default {
   data() {
     return {
       carRegNo: "",
-      loading: false,
-      result: null,
+
+      loadingBsc: false,  // 로딩 - 등록정보, 검사정보
+      loadingAnls: false,   // 로딩 - 분석(API)
+      isAnlsSkipped: false, // 차량분석 여부 (검사정보가 없으면 분석 수행 안함)
       error: null,
 
+      // 데이터 (!!변수 정리 필요)
       vhclInfo: null,     // 차량 등록정보
       inspInfoList: [],   // 차량 검사정보 (리스트)
-      apiInfo: {},        // GPT 결과
+      apiInfo: null,      // GPT 결과
+      anlsMsg: "",        // GPT 분석 결과
 
-      // @@API 호출 전 호출메시지 확인용
+      // !!API 호출 전 호출메시지 확인용
       systemMsg: "",      // GPT 결과 - 시스템 메시지
-      userMsg: "",        // GPT 결과 - 사용자 메시짖
+      userMsg: "",        // GPT 결과 - 사용자 메시지
     }
   },
 
@@ -383,13 +395,13 @@ export default {
     if (vhrno) {
       this.carRegNo = vhrno;
       this.$nextTick(() => {
-        this.anlsCarRegNo();
+        this.vhclBscInfo();
       });
     }
   },
 
   methods: {
-    async anlsCarRegNo() {
+    async vhclBscInfo() {
       if (!this.carRegNo.trim()) {
         alert("차량번호를 입력하세요.");
         return
@@ -400,49 +412,76 @@ export default {
         return;
       }
       
-      this.loading = true;
-      this.error = null;
-      this.result = null;
+      // 등록정보, 검사정보 조회
+      this.resetData(); // 조회전 데이터 초기화
+      this.loadingBsc = true;
+      this.loadingAnls = false;
 
       try {
-        const response = await vhclApi.anlsCarRegNo(this.carRegNo);
-        
-        this.result = response.data;
-        // 차량정보 조회 결과
-        this.vhclInfo = response.data.vhclInfo;
-        // 검사정보 조회 결과
-        this.inspInfoList = response.data.inspInfoList;
-        // API 호출 결과 (!!작업필요)
-        this.apiInfo = response.data.apiInfo;
+        const res = await vhclApi.vhclBscInfo(this.carRegNo);
 
-        //this.systemMsg = response.data.apiInfo.systemMsg ? JSON.stringify(response.data.apiInfo.systemMsg, null, 2) : "";
-        this.systemMsg = response.data.apiInfo.systemMsg;
-        this.userMsg = response.data.apiInfo.userMsg;
+        // 조회결과         
+        this.vhclInfo = res.data.vhclInfo; // 등록정보
+        this.inspInfoList = res.data.inspInfoList; // 검사정보
 
-        //console.log("@@1: " + JSON.stringify(this.vhclInfo) + " / 2: " + JSON.stringify(this.inspInfoList) + " / 3: " + JSON.stringify(this.apiInfo));
+        // 분석DB로 넘겨줄 차량정보 값 셋팅
+        const vhclInfoParam = this.vhclInfo;
+        // 검사정보가 없는 경우 분석DB 조회 제외
+        if(!this.inspInfoList || this.inspInfoList.length === 0){
+          this.isAnlsSkipped = true;
+          return;
+        }
         
+        this.vhclAnlsInfo(vhclInfoParam);   // 분석DB조회 및 API 호출
+
       } catch (error) {
         this.error = '차량 조회에 실패했습니다: ' + (error.message || '알 수 없는 오류')
         console.error('Error creating todo:', error)
+        return;
 
       } finally {
-        this.loading = false;
+        this.loadingBsc = false;
 
         this.$nextTick(() => {
-          this.$refs.resultTop.scrollIntoView({
+          this.$refs.resultTop?.scrollIntoView({
             behavior: "smooth",
             block: "start"
           });
         });
       }
+
+    },
+    async vhclAnlsInfo(vhclInfoParam) {
+      this.isAnlsSkipped = false;
+      this.apiInfo = null;
+      this.loadingAnls = true;
+
+      try {
+        const res = await vhclApi.vhclAnlsInfo(vhclInfoParam);
+        
+        this.apiInfo = res.data;
+        this.systemMsg = res.data.systemMsg;
+        this.userMsg = res.data.userMsg;
+
+      } catch (e) {
+        this.apiInfo = null;
+      } finally {
+        this.loadingAnls = false;
+      }
     },
     // !!API 호출 테스트 - 추후 변경
     async callApiTest(){
+      this.anlsMsg = "";
+      this.loadingAnls = true;
+
       try {
-        // systemMsg = this.systemMsg;
-        // userMsg = this.userMsg;
+        const res = await vhclApi.callApiTest(this.systemMsg, this.userMsg);
+        this.anlsMsg = res.data.anlsMsg;
+
       } catch(e) {
         console.error(e);
+      } finally {
+        this.loadingAnls = false;
       }
     },
     // 차량번호 형식 정규식 검사
@@ -451,6 +490,19 @@ export default {
         const pattern = /(^[0-9]{2,3}[가-힣]{1}[0-9]{4}$)|(^[가-힣]{2}[0-9]{1,2}[가-힣]{1}[0-9]{4}$)/;
 
         return pattern.test(val);
+    },
+    // 데이터 초기화
+    resetData() {
+      this.error = null;
+
+      this.vhclInfo = null;
+      this.inspInfoList = [];
+      this.apiInfo = null;
+      
+      this.isAnlsSkipped = false;
+      this.systemMsg = "";
+      this.userMsg = "";
+
     }
   }
 }
@@ -773,5 +825,30 @@ export default {
   border: 1px solid #dcdcdc;
   background: #fff;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* AI 분석 로딩 */
+.spinner {
+  width: 58px;
+  height: 58px;
+  border: 6px solid #ccc;
+  border-top-color: #1e90ff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.loading-anls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  color: #555;
+}
+
+.loading-text {
+  margin-top: 16px;
+  font-size: 16px;
+  font-weight: 500;
 }
 </style>
