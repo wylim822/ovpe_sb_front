@@ -335,8 +335,66 @@
 
           <!-- API 호출 결과 (최종 분석) -->
           <div v-if="anlsMsg !== ''" style="white-space: pre-wrap; line-height: 1.6;margin-top:20px">
-            <div class="info-key" style="font-size:18px">· AI 분석결과</div>
-            {{ anlsMsg }}
+            <!-- <div class="info-key" style="font-size:18px">· AI 분석결과</div>
+            {{ anlsMsg }} -->
+
+            <div class="info-key" style="font-size:18px;margin-top:30px;">· 종합평가</div>
+            <ul style="list-style:none;">
+              <li>
+                <span>{{ anlsMsg.ovrlEvl }}</span>
+              </li>
+            </ul>
+            
+            <div class="info-key" style="font-size:18px;margin-top:30px;">· 종합등급</div>
+            <ul style="list-style:none;">
+              <li>
+                <span>{{ anlsMsg.ovrlGrd }}</span>
+              </li>
+            </ul>
+            
+            <div class="info-key" style="font-size:18px;margin-top:30px;">· 향후 5년 운행 시 예상 변화</div>
+            <ul style="list-style:none;">
+              <li>
+                <span>{{ anlsMsg.expcChg }}</span>
+              </li>
+            </ul>
+            
+            <div class="info-key" style="font-size:18px;margin-top:30px;">· 정비·관리 권장사항</div>
+            <ul style="list-style:none;">
+              <li>
+                <span>{{ anlsMsg.mntn }}</span>
+              </li>
+            </ul>
+
+            <div class="info-key" style="font-size:18px">· 배출가스 분석</div>
+            <ul style="list-style:none;">
+              <li>
+                <span>{{ anlsMsg.emisAnls }}</span>
+              </li>
+            </ul>
+
+            <div class="info-key" style="font-size:18px;margin-top:30px;" >· 실질연식 및 연식이득</div>
+            <ul style="list-style:none;">
+              <li>
+                <span>{{ anlsMsg.ageExpln }}</span>
+              </li>
+            </ul>
+
+            <div class="info-key" style="font-size:18px;margin-top:30px;" >· 방사형 그래프 해석</div>
+            <ul style="list-style:none;">
+              <li>
+                <span>{{ anlsMsg.graphExpln }}</span>
+              </li>
+            </ul>
+
+            <div class="info-key" style="font-size:18px;margin-top:30px;">· 잔존가치 해석</div>
+            <ul style="list-style:none;">
+              <li>
+                <span>{{ anlsMsg.rmnVal }}</span>
+              </li>
+            </ul>
+
+            <div style="margin-top:70px;font-weight:bold;text-align: center">*** {{ anlsMsg.notice }} ***</div>
           </div>
         </div>
 
@@ -464,6 +522,7 @@ export default {
         this.userMsg = res.data.userMsg;
 
       } catch (e) {
+        console.error(e);
         this.apiInfo = null;
       } finally {
         this.loadingAnls = false;
@@ -476,7 +535,54 @@ export default {
 
       try {
         const res = await vhclApi.callApiTest(this.systemMsg, this.userMsg);
-        this.anlsMsg = res.data.anlsMsg;
+        this.anlsMsg = res.data;
+
+        //@@테스트용 결과
+        // this.anlsMsg = {
+        //   emisAnls: "이번 분석은 아반떼(AVANTE) 차량의 배출가스를 분석하였습니다.\n\n- **부하 검사(ASM)**:\n  - ASM CO: 0.52 (기준: 0.52) → 기준에 적합\n  - ASM HC: 42.00 (기준: 42.00) → 기준에 적합\n  - ASM NOx: 690.00 (기준: 690.00) → 기준에 적합\n\n- **무부하 검사(IDLE)**:\n  - IDLE CO: 1.00 (기준: 1.00) → 기준에 적합\n  - IDLE HC: 120.00 (기준: 120.00) → 기준에 적합\n\n- 차량의 배출가스 수치는 기준값에 부합하므로, 배출가스 기준에서 합격한 상태입니다.",
+        //   ageEstmt: "이번 차량의 실질연식을 배출가스 검사 결과에 기반하여 분석하였습니다.\n\n- **배출가스 기반 실질연식**:\n  - ASM CO: r = (0.52/0.52) × 100 → 100% (하위 그룹)\n  - ASM HC: r = (42/42) × 100 → 100% (하위 그룹)\n  - ASM NOx: r = (690/690) × 100 → 100% (하위 그룹)\n  - 평균적으로 실질연식 증가 경향이 있지만 완전히 적합한 상태입니다.\n\n- **주행거리 기반 산정**:\n  - 예상 주행거리 = 20,000 km × 16년 = 320,000 km\n  - 실제 주행거리 = 340,000 km → 연식손실 -1년\n\n- **운행차 연식지표**:\n  - 배출가스 기반 실질연식: 16년\n  - 주행거리 기반 실질연식: 17년 → 평균: 16.5년 = \n  - 실제 대비 '다소 노후' 상태입니다.",
+        //   ovrlGrd: "이번 차량의 종합 품질등급은 B로 평가됩니다. \n\n- 허용 기준 50% 이하로 적당한 배출가스 수치를 기록하고 있으며,\n- 전반적으로 안정적인 상태로 판단됩니다.",
+        //   mntn: "다음 항목에 대한 점검을 권장합니다.\n\n- 점화플러그 상태 점검\n- 흡기 및 스로틀바디 점검\n- 인젝터 상태 점검",
+        //   rmnVal: "잔존가치는 주행거리와 연식 손실 등을 고려하여 다음과 같이 해석됩니다. \n\n- 기준가격이 명시되지 않았지만,\n- 중고차 시장에서 동급 대비 +5~10% 수준의 가격 형성이 예상됩니다.\n\n본 분석은 통계 기반 개념적 해석이며 실제 중고차 거래가격의 기준이 아닙니다.",
+        //   notice: "본 분석은 통계 기반 개념적 해석이며, 법적 판정 또는 실제 중고차 거래가격의 직접 기준이 아닙니다."
+        // };
+
+        // this.anlsMsg = {
+        //   emisAnls: {
+        //     무부하: {
+        //       "ASM CO": { 값: 0.0, "상대 위치": "상위", 비율: "0.00% 이하" },
+        //       "ASM HC": { 값: 4.0, "상대 위치": "상위", 비율: "3.33% 이하" },
+        //       "ASM NOX": { 값: 0.0, "상대 위치": "상위", 비율: "0.00% 이하" }
+        //     },
+        //     부하: {
+        //       "IDLE CO": { 값: 0.0, "상대 위치": "상위", 비율: "0.00% 이하" },
+        //       "IDLE HC": { 값: 0.0, "상대 위치": "상위", 비율: "0.00% 이하" }
+        //     }
+        //   },
+
+        //   ageEstmt: {
+        //     "배출가스 기반 실질연식": "7년",
+        //     "주행거리 기반 실질연식": "3년",
+        //     평균연식지표: "젊음"
+        //   },
+
+        //   ovrlGrd: {
+        //     등급: "A",
+        //     근거:
+        //       "ASM과 IDLE 검사 결과가 모두 허용 기준보다 훨씬 우수하며, 연식이득이 있어 상대적으로 젊은 상태임."
+        //   },
+
+        //   mntn: "기본 관리(오일, 필터, 연료첨가제).",
+
+        //   rmnVal: {
+        //     기준가격: "base_price 가정 시 연식이득 +3년 → +10~15%",
+        //     상대가격: "동급 대비 +5~10%"
+        //   },
+
+        //   notice:
+        //     "본 분석은 통계 기반 개념적 해석이며, 법적 판정 또는 실제 중고차 거래가격의 직접 기준이 아닙니다."
+        // };
+
 
       } catch(e) {
         console.error(e);
@@ -503,6 +609,7 @@ export default {
       this.systemMsg = "";
       this.userMsg = "";
 
+      this.anlsMsg = "";
     }
   }
 }
@@ -850,5 +957,36 @@ export default {
   margin-top: 16px;
   font-size: 16px;
   font-weight: 500;
+}
+
+/* ===============================
+   배출가스 분석 결과 테이블
+================================*/
+.emis-table {
+  display: grid;
+  grid-template-columns: 140px 180px 100px 160px 140px;
+  width: fit-content;
+  margin: 0 auto;
+  padding-top: 10px
+}
+
+.emis-table .insp-row {
+  display: contents;
+}
+
+.emis-table .cell {
+  padding: 10px 8px;
+  font-size: 14px;
+  border-bottom: 1px solid #eef2f6;
+  border-right: 1px solid #eef2f6;
+}
+
+.emis-table .cell:last-child {
+  border-right: none;
+}
+
+.emis-table .th {
+  background: #f1f6fc;
+  font-weight: 700;
 }
 </style>
