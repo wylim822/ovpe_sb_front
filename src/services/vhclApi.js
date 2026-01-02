@@ -21,6 +21,11 @@ export default {
       return vhclApi.post('/vhclAnlsInfo', vhclInfoParam)
     },
 
+    // 차트용
+    vhclAnlsMetricDist(param) {
+      return vhclApi.post('/vhclAnlsMetricDist', param);
+    },
+
     // API 호출 테스트 (!!추후 정리 필요)
     callApiTest(systemMsg, userMsg){
       return vhclApi.post('/callApiTest', {systemMsg, userMsg})

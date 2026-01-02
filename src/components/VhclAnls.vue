@@ -1,5 +1,5 @@
-<template ref="resultTop">
-  <div class="wrap">
+<template>
+  <div class="wrap" ref="resultTop">
 
     <!-- Hero 영역 -->
     <section class="hero">
@@ -304,6 +304,74 @@
         </div>
       </div>
 
+      <!-- 검사 데이터 -->
+      <div class="info-card" v-if="inspSummary.length > 0">
+        <div class="section-title">
+          <span class="line"></span>
+          차량 검사 이력 요약
+        </div>
+
+        <div class="insp-scroll-wrapper">
+          <div class="insp-table insp-summary-table">
+
+            <!-- 헤더 -->
+            <div class="cell th">검사년도</div>
+            <div class="cell th">주행거리</div>
+
+            <div class="cell th">ASM CO 값</div>
+            <div class="cell th">ASM CO 기준</div>
+            <div class="cell th">ASM HC 값</div>
+            <div class="cell th">ASM HC 기준</div>
+            <div class="cell th">ASM NOX 값</div>
+            <div class="cell th">ASM NOX 기준</div>
+
+            <div class="cell th">IDLE CO 값</div>
+            <div class="cell th">IDLE CO 기준</div>
+            <div class="cell th">IDLE HC 값</div>
+            <div class="cell th">IDLE HC 기준</div>
+
+            <div class="cell th">람다 값</div>
+
+            <!-- 바디 -->
+            <div
+              v-for="(row, idx) in inspSummary"
+              :key="idx"
+              class="insp-row"
+            >
+              <div class="cell">{{ row.year }}</div>
+              <div class="cell">{{ row.mileage }}</div>
+
+              <div class="cell">{{ row.asm.co.val }}</div>
+              <div class="cell">{{ row.asm.co.lim }}</div>
+              <div class="cell">{{ row.asm.hc.val }}</div>
+              <div class="cell">{{ row.asm.hc.lim }}</div>
+              <div class="cell">{{ row.asm.nox.val }}</div>
+              <div class="cell">{{ row.asm.nox.lim }}</div>
+
+              <div class="cell">{{ row.idle.co.val }}</div>
+              <div class="cell">{{ row.idle.co.lim }}</div>
+              <div class="cell">{{ row.idle.hc.val }}</div>
+              <div class="cell">{{ row.idle.hc.lim }}</div>
+
+              <div class="cell">{{ row.idle.lambda.val }}</div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <div class="info-card" v-if="metricCharts.length > 0">
+        <div class="section-title">
+          <span class="line"></span>
+          차트
+        </div>
+        <MetricBarChart
+          v-for="item in metricCharts"
+          :key="item.metric"
+          :metricData="item"
+        />
+      </div>
+
       <!-- AI 리포트 -->
       <div class="info-card">
         <div class="section-title">
@@ -397,8 +465,6 @@
             <div style="margin-top:70px;font-weight:bold;text-align: center">*** {{ anlsMsg.notice }} ***</div>
           </div>
         </div>
-
-        
         
         <div v-else-if="apiInfo != null && !apiInfo.userMsg" class="empty-msg">
           현재 AI 분석 미지원 연료 차량입니다.
@@ -423,13 +489,16 @@
 
 <script>
 import vhclApi from '../services/vhclApi'
+import MetricBarChart from '@/components/charts/MetricBarChart.vue'
 
 export default {
   name: "VhclAnls",
+  components: {
+    MetricBarChart
+  },
   data() {
     return {
       carRegNo: "",
-
       loadingBsc: false,  // 로딩 - 등록정보, 검사정보
       loadingAnls: false,   // 로딩 - 분석(API)
       isAnlsSkipped: false, // 차량분석 여부 (검사정보가 없으면 분석 수행 안함)
@@ -444,6 +513,9 @@ export default {
       // !!API 호출 전 호출메시지 확인용
       systemMsg: "",      // GPT 결과 - 시스템 메시지
       userMsg: "",        // GPT 결과 - 사용자 메시지
+
+      // 차트용
+      metricCharts: []
     }
   },
 
@@ -484,12 +556,20 @@ export default {
 
         // 분석DB로 넘겨줄 차량정보 값 셋팅
         const vhclInfoParam = this.vhclInfo;
-        // 검사정보가 없는 경우 분석DB 조회 제외
+
+        // 검사정보가 없는 경우 분석DB 조회, 차트 조회 제외
         if(!this.inspInfoList || this.inspInfoList.length === 0){
           this.isAnlsSkipped = true;
+          this.metricCharts = [];
           return;
         }
-        
+
+        // 차트용
+        this.fetchMetricCharts({
+          vhrno: this.vhclInfo.vhrno,
+          fuel: this.vhclInfo.fuel
+        });
+
         this.vhclAnlsInfo(vhclInfoParam);   // 분석DB조회 및 API 호출
 
       } catch (error) {
@@ -510,9 +590,9 @@ export default {
 
     },
     async vhclAnlsInfo(vhclInfoParam) {
-      this.isAnlsSkipped = false;
-      this.apiInfo = null;
-      this.loadingAnls = true;
+      this.isAnlsSkipped = false
+      this.apiInfo = null
+      this.loadingAnls = true
 
       try {
         const res = await vhclApi.vhclAnlsInfo(vhclInfoParam);
@@ -528,9 +608,22 @@ export default {
         this.loadingAnls = false;
       }
     },
+
+    // 차트용
+    async fetchMetricCharts(param) {
+      try {
+        const res = await vhclApi.vhclAnlsMetricDist(param);
+        this.metricCharts = res.data.metricCharts || [];
+        console.log(this.metricCharts);
+      } catch (e) {
+        console.error('차트 데이터 조회 실패', e);
+        this.metricCharts = [];
+      }
+    },
+
     // !!API 호출 테스트 - 추후 변경
     async callApiTest(){
-      this.anlsMsg = "";
+      this.anlsMsg = null;
       this.loadingAnls = true;
 
       try {
@@ -610,6 +703,41 @@ export default {
       this.userMsg = "";
 
       this.anlsMsg = "";
+
+      this.metricCharts = []
+    }
+  },
+  computed: {
+    inspSummary() {
+      if (!this.inspInfoList || this.inspInfoList.length === 0) {
+        return [];
+      }
+
+      return this.inspInfoList
+        .map(item => {
+          const year = item.smoChkExpDate
+            ? item.smoChkExpDate.substring(0, 4)
+            : "";
+
+          return {
+            year,
+            mileage: item.carMile,
+
+            asm: {
+              co:   { val: item.unloadSmoVal1, lim: item.unloadSmoLim1 },
+              hc:   { val: item.unloadSmoVal2, lim: item.unloadSmoLim2 },
+              nox:  { val: item.unloadSmoVal3, lim: item.unloadSmoLim3 }
+            },
+
+            idle: {
+              co:     { val: item.unloadSmoVal4, lim: item.unloadSmoLim4 },
+              hc:     { val: item.unloadSmoVal5, lim: item.unloadSmoLim5 },
+              lambda: { val: item.unloadSmoVal6 }
+            }
+          };
+        })
+        // ✅ 검사년도 오름차순 정렬
+        .sort((a, b) => a.year.localeCompare(b.year));
     }
   }
 }
@@ -768,6 +896,7 @@ export default {
   border-radius: 16px;
   box-shadow: 0 4px 14px rgba(0,0,0,0.08);
   margin-bottom: 32px;
+  min-width: 0;
 }
 
 /* 제목 */
@@ -988,5 +1117,14 @@ export default {
 .emis-table .th {
   background: #f1f6fc;
   font-weight: 700;
+}
+/* ===============================
+   차량 검사 이력 요약 테이블
+================================*/
+.insp-summary-table {
+  grid-template-columns:
+    100px   /* 검사년도 */
+    120px   /* 주행거리 */
+    repeat(11, minmax(120px, max-content));
 }
 </style>
