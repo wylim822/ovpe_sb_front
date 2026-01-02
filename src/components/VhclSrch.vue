@@ -61,7 +61,6 @@
                 :gridOptions="mainGridOptions"
                 :columnDefs="mainColDefs"
                 :rowData="mainGridData"
-                :rowSelection="single"
                 :pagination="true"
                 :paginationPageSize="mainPageSize"
                 @rowClicked="onMainRowClick"
