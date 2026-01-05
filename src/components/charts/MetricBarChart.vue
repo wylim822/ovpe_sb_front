@@ -87,8 +87,10 @@ export default {
 
       return {
         title: {
-          text: `${this.metricData.metric} 분포`,
-          subtext: `기준값: ${lim}`,
+          text: `${this.metricData.metric} 측정값 비교`,
+          subtext: hasMyValue
+            ? '다른 차량들의 분포 속에서 내 차량 위치를 확인해보세요'
+            : '다른 차량들의 측정값 분포를 확인해보세요',
           left: 'center'
         },
 
@@ -96,16 +98,28 @@ export default {
           trigger: 'item',
           formatter: p => {
             if (p.componentType === 'markLine') {
-              return `
-                <b>${p.data.label.formatter}</b><br/>
-                측정값: ${p.data.xAxis}
-              `
+              const isMyCar = p.data.lineStyle?.color === '#22c55e'
+
+              return isMyCar
+                ? `
+                  <b>내 차량 측정값</b><br/>
+                  현재 값: ${p.data.xAxis}<br/>
+                  ${
+                    isOutOfRange
+                      ? '다른 차량 분포에서는 거의 나타나지 않는 값이에요'
+                      : '다른 차량들과 비슷한 범위에 있어요'
+                  }
+                `
+                : `
+                  <b>기준값</b><br/>
+                  이 값을 넘으면 기준 초과로 판단돼요
+                `
             }
 
             return `
-              <b>${this.metricData.metric}</b><br/>
-              측정값: ${p.value[0]}<br/>
-              차량 수: ${p.value[1]}
+              <b>다른 차량들은 보통 이 값이에요</b><br/>
+              측정값 구간: ${p.value[0]}<br/>
+              해당 차량 수: ${p.value[1]}대
             `
           }
         },
@@ -150,7 +164,10 @@ export default {
                     width: 2,
                     color: '#9ca3af'
                   },
-                  label: { formatter: '기준', position: 'end' }
+                  label: {
+                    formatter: '이 선을 넘으면 기준 초과',
+                    position: 'end'
+                  }
                 },
                 ...(hasMyValue
                   ? [
@@ -162,8 +179,8 @@ export default {
                         },
                         label: {
                           formatter: isOutOfRange
-                            ? '내 차량 (분포 밖)'
-                            : '내 차량',
+                            ? '내 차량은 분포 범위 밖에 있어요'
+                            : '내 차량은 이 위치에 있어요',
                           position: 'end'
                         }
                       }
