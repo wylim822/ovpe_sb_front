@@ -22,7 +22,11 @@
           <i class="ri-search-line"></i>
           <span>차량번호 검색</span>
         </router-link>
- 
+        
+        <router-link to="/vhclAnlsOld" class="nav-item" @click.native="handleMenuClick">
+          <i class="ri-search-line"></i>
+          <span>차량 AI 분석 (old)</span>
+        </router-link>
       </nav>
  
     </aside>
@@ -187,6 +191,7 @@ export default {
   padding: 10px;
   margin-top: 30px;
   position: relative; /* 사이드바 오버레이용 */
+  background: #f4f6fb;
 }
  
 /* 오버레이 스타일 (사이드바가 열렸을 때만 적용) */

@@ -44,6 +44,40 @@ export default {
     // Sub Grid 조회
     getMigDetail(params) {
       return axios.get("/vhcl/migDetail", { params }).then(res => res.data);
-    }
+    },
 
+    // 공통코드 목록 조회 (selectbox)
+    commonCodeList(codeType){
+      return vhclApi.get("/commonCodeList", { params: { codeType } });
+    },
+
+    // 제작사 목록 조회 (selectbox)
+    makerList(){
+      return vhclApi.get("/makerList")
+    },
+
+    // 모델 목록 조회 (selectbox)
+    modelList(makerId){
+      return vhclApi.get("/modelList", { params: { makerId } })
+    },
+
+    // 세부모델 목록 조회 (selectbox)
+    detailModelList(modelId){
+      return vhclApi.get("/detailModelList", { params: { modelId } })
+    },
+
+    // 등급 목록 조회 (selectbox)
+    trimList(detailId){
+      return vhclApi.get("/trimList", { params: { detailId } })
+    },
+
+    // 차량정보, 검사정보 입력 -> 부가정보 조회
+    vhclExtraInfo(params){
+      return vhclApi.post('/vhclExtraInfo', params);
+    },
+
+    // 차량정보, 검사정보 입력 -> 차량분석
+    vhclInputAnls(params){
+      return vhclApi.post('/vhclInputAnls', params)
+    }
 };
