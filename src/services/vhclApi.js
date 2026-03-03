@@ -79,5 +79,60 @@ export default {
     // 차량정보, 검사정보 입력 -> 차량분석
     vhclInputAnls(params){
       return vhclApi.post('/vhclInputAnls', params)
+    },
+
+    // ============ 차량 카테고리 관리 ============
+    // 제조사 신규 추가 행 insert
+    async insertMaker(paramList) {
+      return vhclApi.post('/ctgryMng/insertMaker', paramList).then(res => res.data);
+    },
+    // 제조사 기존 행 update
+    async updateMaker(paramList) {
+      return vhclApi.put('/ctgryMng/updateMaker', paramList).then(res => res.data);
+    },
+    // 제조사 기존 행 delete
+    async deleteMaker(params) {
+      return vhclApi.delete('/ctgryMng/deleteMaker',{ data: { params } });
+    },
+
+    // 모델 신규 추가 행 insert
+    async insertModel(paramList){
+      return vhclApi.post('/ctgryMng/insertModel', paramList).then(res => res.data);
+    },
+    // 모델 기존 행 update
+    async updateModel(paramList) {
+      return vhclApi.put('/ctgryMng/updateModel', paramList).then(res => res.data);
+    },
+    // 모델 기존 행 delete
+    async deleteModel(params) {
+      return vhclApi.delete('/ctgryMng/deleteModel',{ data: { params } });
+    },
+
+    // 세부모델 신규 추가 행 insert
+    async insertDetail(paramList){
+      return vhclApi.post('/ctgryMng/insertDetail', paramList).then(res => res.data);
+    },
+    // 세부모델 기존 행 update
+    async updateDetail(paramList) {
+      return vhclApi.put('/ctgryMng/updateDetail', paramList).then(res => res.data);
+    },
+    // 세부모델 기존 행 delete
+    async deleteDetail(params) {
+      return vhclApi.delete('/ctgryMng/deleteDetail',{ data: { params } });
+    },
+
+    // 등급 신규 추가 행 insert
+    async insertTrim(paramList){
+      return vhclApi.post('/ctgryMng/insertTrim', paramList).then(res => res.data);
+    },
+    // 등급 기존 행 update
+    async updateTrim(paramList) {
+      return vhclApi.put('/ctgryMng/updateTrim', paramList).then(res => res.data);
+    },
+    // 등급 기존 행 delete
+    async deleteTrim(params) {
+      return vhclApi.delete('/ctgryMng/deleteTrim',{ data: { params } });
     }
+
+    // ============ 차량 카테고리 관리 ============
 };

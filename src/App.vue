@@ -22,6 +22,11 @@
           <i class="ri-search-line"></i>
           <span>차량번호 검색</span>
         </router-link>
+
+        <router-link to="/vhclCtgryMng" class="nav-item" @click.native="handleMenuClick">
+          <i class="ri-search-line"></i>
+          <span>차량 카테고리 관리</span>
+        </router-link>
         
         <router-link to="/vhclAnlsOld" class="nav-item" @click.native="handleMenuClick">
           <i class="ri-search-line"></i>
