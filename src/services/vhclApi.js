@@ -81,6 +81,18 @@ export default {
       return vhclApi.post('/vhclInputAnls', params)
     },
 
+    // 차량 카테고리 조회 (CEG_CAR_MIG 검색)
+    carSearch(params) {
+        return vhclApi.get('/carSearch', {
+            params: {
+                detailId: params.detailId,
+                trimId: params.trimId || '',
+                page: params.page,
+                pageSize: params.pageSize
+            }
+        })
+    },
+
     // ============ 차량 카테고리 관리 ============
     // 제조사 신규 추가 행 insert
     async insertMaker(paramList) {

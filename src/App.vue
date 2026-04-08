@@ -23,15 +23,47 @@
           <span>차량번호 검색</span>
         </router-link>
 
+        <router-link to="/vhclCtgrySrch" class="nav-item" @click.native="handleMenuClick">
+          <i class="ri-search-line"></i>
+          <span>차량 카테고리 조회</span>
+        </router-link>
+
         <router-link to="/vhclCtgryMng" class="nav-item" @click.native="handleMenuClick">
           <i class="ri-search-line"></i>
           <span>차량 카테고리 관리</span>
         </router-link>
-        
+
         <router-link to="/vhclAnlsOld" class="nav-item" @click.native="handleMenuClick">
           <i class="ri-search-line"></i>
           <span>차량 AI 분석 (old)</span>
         </router-link>
+
+        <!-- 즐겨찾기 섹션 -->
+        <div class="favorite-section">
+            <div class="favorite-title">
+                <span>★ 즐겨찾기</span>
+            </div>
+        
+            <!-- 즐겨찾기 항목 없을 때 -->
+            <div v-if="favoriteList.length === 0" class="favorite-empty">
+                즐겨찾기한 차량이 없습니다.
+            </div>
+        
+            <!-- 즐겨찾기 목록 -->
+            <ul class="favorite-list" v-else>
+                <li
+                    class="favorite-item"
+                    v-for="item in favoriteList"
+                    :key="item.vhrno"
+                >
+                    <div class="favorite-info" @click="goToAnls(item.vhrno)">
+                        <span class="favorite-vhrno">{{ item.vhrno }}</span>
+                        <span class="favorite-vhcnm">{{ item.vhcnm }}</span>
+                    </div>
+                    <button class="favorite-remove" @click.stop="removeFavorite(item.vhrno)">✕</button>
+                </li>
+            </ul>
+        </div>
       </nav>
  
     </aside>
@@ -45,17 +77,24 @@
 </template>
  
 <script>
+import storageUtil from './services/storageUtil'
+
 export default {
   data() {
     return {
       isSidebarOpen: false,   // 사이드바 오픈 상태
-      isMobile: window.innerWidth <= 900
+      isMobile: window.innerWidth <= 900,
+      favoriteList: []       // 즐겨찾기 목록
     };
   },
  
   methods: {
     toggleSidebar() {
-      this.isSidebarOpen = !this.isSidebarOpen;
+      this.isSidebarOpen = !this.isSidebarOpen
+      // 사이드바 열릴 때 즐겨찾기 목록 갱신
+      if (this.isSidebarOpen) {
+          this.loadFavoriteList()
+      }
     },
  
     // 사이드바 닫음
@@ -79,6 +118,30 @@ export default {
  
     handleResize() {
       this.isMobile = window.innerWidth <= 900;
+    },
+
+    // 즐겨찾기 목록 불러오기
+    loadFavoriteList() {
+      this.favoriteList = storageUtil.getFavoriteList()
+    },
+    
+    // 즐겨찾기 차량 클릭 -> 분석 페이지로 이동
+    goToAnls(vhrno) {
+      this.$router.push({ path: '/vhclAnlsOld', query: { vhrno: vhrno } })
+      .catch(function(err) {
+          // 같은 페이지 이동 시 발생하는 에러는 무시
+          // (NavigationDuplicated 오류 방지)
+          if (err.name !== 'NavigationDuplicated') {
+              throw err  // 다른 에러는 그대로 던짐
+          }
+      })
+      this.closeSidebar()
+    },
+    
+    // 즐겨찾기 삭제
+    removeFavorite(vhrno) {
+      storageUtil.removeFavorite(vhrno)
+      this.loadFavoriteList()
     }
   },
  
@@ -210,5 +273,90 @@ export default {
   background: rgba(0, 0, 0, 0.5);
   z-index: 1000; /* 사이드바 (1500)보다 낮고 본문보다 높게 */
   pointer-events: auto; /* 클릭 가능하게 설정 */
+}
+
+/* 즐겨찾기 섹션 */
+.favorite-section {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid #e5e5e5;
+}
+ 
+.favorite-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #f5a623;
+    padding: 0 4px 10px;
+    letter-spacing: 0.3px;
+}
+ 
+.favorite-empty {
+    font-size: 12px;
+    color: #bbb;
+    padding: 6px 4px;
+    text-align: center;
+}
+ 
+.favorite-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+ 
+.favorite-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 10px;
+    border-radius: 6px;
+    transition: background 0.15s;
+    cursor: pointer;
+}
+ 
+.favorite-item:hover {
+    background: #fff8e7;
+}
+ 
+.favorite-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+}
+ 
+.favorite-vhrno {
+    font-size: 13px;
+    font-weight: 600;
+    color: #333;
+    letter-spacing: 0.8px;
+}
+ 
+.favorite-vhcnm {
+    font-size: 11px;
+    color: #aaa;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 160px;
+}
+ 
+.favorite-remove {
+    font-size: 11px;
+    color: #ccc;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 2px 4px;
+    border-radius: 4px;
+    flex-shrink: 0;
+    transition: 0.15s;
+}
+ 
+.favorite-remove:hover {
+    color: #e05;
+    background: #fff0f0;
 }
 </style>

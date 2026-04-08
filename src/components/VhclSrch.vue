@@ -360,13 +360,21 @@ export default {
       const vhrno = params.data.vhrno;
       if (!vhrno) return;
 
-      const routeUrl = this.$router.resolve({
-        path: "/",
-        query: { vhrno }
-      }).href;
-
-      window.open(routeUrl, "_blank");
+      // window.open 대신 router.push 사용 (새 탭 X, 현재 탭 이동)
+      this.$router.push({ path: '/vhclAnlsOld', query: { vhrno } });
     }
+    // 새 탭에서 열기
+    // onSubRowClick(params) {
+    //   const vhrno = params.data.vhrno;
+    //   if (!vhrno) return;
+
+    //   const routeUrl = this.$router.resolve({
+    //     path: "/vhclAnlsOld",
+    //     query: { vhrno }
+    //   }).href;
+
+    //   window.open(routeUrl, "_blank");
+    // }
 
   }
   

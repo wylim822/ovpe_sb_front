@@ -3,7 +3,7 @@
 
     <!-- Hero 영역 -->
     <section class="hero">
-      <div class="hero-inner fade-up">
+      <div class="hero-inner">
 
         <h1 class="title flicker">
           내 차, 객관적으로 평가해볼까?
@@ -13,15 +13,39 @@
           차량번호만 입력하면 등록 정보 및 검사 정보와 AI 분석을 바로 보여드립니다.
         </p>
 
-        <div class="plate-box fade-up delay-2">
-          <input
-            v-model="carRegNo"
-            type="text"
-            placeholder="예: 12가 3456"
-            class="plate-input"
-            @keyup.enter="vhclBscInfo"
-          />
-          <button class="btn-search" @click="vhclBscInfo">조회</button>
+        <!-- 검색창 + 최근 검색 드롭다운 -->
+        <div class="search-wrapper">
+            <div class="plate-box fade-up delay-2">
+                <input
+                    v-model="carRegNo"
+                    type="text"
+                    placeholder="예: 12가 3456"
+                    class="plate-input"
+                    @keyup.enter="vhclBscInfo"
+                    @focus="onInputFocus"
+                    @blur="onInputBlur"
+                />
+                <button class="btn-search" @click="vhclBscInfo">조회</button>
+            </div>
+        
+            <!-- 최근 검색 드롭다운 -->
+            <div class="recent-dropdown" v-if="showRecent && recentList.length > 0">
+                <div class="recent-header">
+                    <span class="recent-title">최근 검색</span>
+                    <button class="recent-clear" @click="onRecentClear">전체 삭제</button>
+                </div>
+                <ul class="recent-list">
+                    <li
+                        class="recent-item"
+                        v-for="vhrno in recentList"
+                        :key="vhrno"
+                    >
+                        <span class="recent-icon">🕐</span>
+                        <span class="recent-vhrno" @click="onRecentClick(vhrno)">{{ vhrno }}</span>
+                        <button class="recent-remove" @click.stop="onRecentRemove(vhrno)">✕</button>
+                    </li>
+                </ul>
+            </div>
         </div>
       </div>
     </section>
@@ -39,10 +63,20 @@
 
       <!-- 차량 등록 정보 -->
       <div class="info-card">
-        <div class="section-title">
-          <span class="line"></span>
-          차량 등록 정보
-        </div>
+        <div class="section-title-wrap">
+          <div class="section-title">
+              <span class="line"></span>
+              차량 등록 정보
+          </div>
+          <button
+              class="btn-favorite"
+              v-if="vhclInfo !== null"
+              @click="toggleFavorite"
+              :class="{ active: favoriteFlag }"
+          >
+              {{ favoriteFlag ? '★ 즐겨찾기 해제' : '☆ 즐겨찾기 추가' }}
+          </button>
+      </div>
 
         <div v-if="vhclInfo !== null">
           <div class="info-table">
@@ -490,6 +524,7 @@
 <script>
 import vhclApi from '../services/vhclApi'
 import MetricBarChart from '@/components/charts/MetricBarChart.vue'
+import storageUtil from '../services/storageUtil'
 
 export default {
   name: "VhclAnls",
@@ -515,7 +550,22 @@ export default {
       userMsg: "",        // GPT 결과 - 사용자 메시지
 
       // 차트용
-      metricCharts: []
+      metricCharts: [],
+
+      // 최근 검색, 즐겨찾기
+      recentList: [],         // 최근 검색 목록
+      showRecent: false,      // 최근 검색 드롭다운 표시 여부
+      favoriteFlag: false,    // 현재 조회 차량 즐겨찾기 여부
+    }
+  },
+
+  watch: {
+    '$route.query.vhrno': function(newVhrno, oldVhrno) {
+        // 차량번호 값이 바뀔 때만 실행 (같은 값이면 무시)
+        if (newVhrno && newVhrno !== oldVhrno) {
+            this.carRegNo = newVhrno
+            this.vhclBscInfo()
+        }
     }
   },
 
@@ -550,9 +600,13 @@ export default {
       try {
         const res = await vhclApi.vhclBscInfo(this.carRegNo);
 
+        storageUtil.addRecent(this.carRegNo.replace(/\s+/g, ''))  // 최근 검색 저장
+
         // 조회결과         
         this.vhclInfo = res.data.vhclInfo; // 등록정보
         this.inspInfoList = res.data.inspInfoList; // 검사정보
+
+        this.checkFavorite()  // 즐겨찾기 여부 체크
 
         // 분석DB로 넘겨줄 차량정보 값 셋팅
         const vhclInfoParam = this.vhclInfo;
@@ -587,7 +641,6 @@ export default {
           });
         });
       }
-
     },
     async vhclAnlsInfo(vhclInfoParam) {
       this.isAnlsSkipped = false
@@ -705,6 +758,70 @@ export default {
       this.anlsMsg = "";
 
       this.metricCharts = []
+    },
+
+    // 최근 검색 목록 불러오기
+    loadRecentList() {
+        this.recentList = storageUtil.getRecentList()
+    },
+    
+    // 최근 검색 드롭다운 열기
+    onInputFocus() {
+        this.loadRecentList()
+        if (this.recentList.length > 0) {
+            this.showRecent = true
+        }
+    },
+    
+    // 최근 검색 드롭다운 닫기 (입력창 포커스 아웃 시)
+    onInputBlur() {
+        setTimeout(() => {
+            this.showRecent = false
+        }, 200)
+    },
+    
+    // 최근 검색 항목 클릭 -> 해당 차량번호로 조회
+    onRecentClick(vhrno) {
+        this.carRegNo = vhrno
+        this.showRecent = false
+        this.vhclBscInfo()
+    },
+    
+    // 최근 검색 특정 항목 삭제
+    onRecentRemove(vhrno) {
+        storageUtil.removeRecent(vhrno)
+        this.loadRecentList()
+        if (this.recentList.length === 0) {
+            this.showRecent = false
+        }
+    },
+    
+    // 최근 검색 전체 삭제
+    onRecentClear() {
+        storageUtil.clearRecent()
+        this.recentList = []
+        this.showRecent = false
+    },
+    
+    // 즐겨찾기 토글 (추가/제거)
+    toggleFavorite() {
+        if (!this.vhclInfo) return
+        const vhrno = this.vhclInfo.vhrno
+        const vhcnm = this.vhclInfo.vhcnm
+    
+        if (this.favoriteFlag) {
+            storageUtil.removeFavorite(vhrno)
+            this.favoriteFlag = false
+        } else {
+            storageUtil.addFavorite(vhrno, vhcnm)
+            this.favoriteFlag = true
+        }
+    },
+    
+    // 즐겨찾기 여부 체크 (조회 후 호출)
+    checkFavorite() {
+        if (!this.vhclInfo) return
+        this.favoriteFlag = storageUtil.isFavorite(this.vhclInfo.vhrno)
     }
   },
   computed: {
@@ -758,11 +875,10 @@ export default {
    HERO 영역
 ================================*/
 .hero {
-  /* background: linear-gradient(to bottom, rgba(12,12,12,1) 50%, rgba(12,12,12,0.0) 100%); */
   color: #fff;
   padding: 40px 20px 80px;
   text-align: center;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .hero-inner {
@@ -888,6 +1004,8 @@ export default {
 .result-container {
   margin-top: -40px;
   padding: 0 20px;
+  position: relative;
+  z-index: 1;
 }
 
 .info-card {
@@ -1126,5 +1244,137 @@ export default {
     100px   /* 검사년도 */
     120px   /* 주행거리 */
     repeat(11, minmax(120px, max-content));
+}
+
+/* 검색창 래퍼 (드롭다운 기준점) */
+.search-wrapper {
+    position: relative;
+    width: 100%;
+    z-index: 10;
+}
+ 
+/* 최근 검색 드롭다운 */
+.recent-dropdown {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 22px;
+    right: 22px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    z-index: 1000;
+    overflow: hidden;
+}
+ 
+.recent-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px 6px;
+    border-bottom: 1px solid #f0f0f0;
+}
+ 
+.recent-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: #888;
+}
+ 
+.recent-clear {
+    font-size: 12px;
+    color: #bbb;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+}
+ 
+.recent-clear:hover {
+    color: #e05;
+}
+ 
+.recent-list {
+    list-style: none;
+    padding: 6px 0;
+    margin: 0;
+}
+ 
+.recent-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+ 
+.recent-item:hover {
+    background: #f5f9ff;
+}
+ 
+.recent-icon {
+    font-size: 13px;
+    color: #bbb;
+}
+ 
+.recent-vhrno {
+    flex: 1;
+    font-size: 15px;
+    color: #333;
+    font-weight: 500;
+    letter-spacing: 1px;
+}
+ 
+.recent-remove {
+    font-size: 11px;
+    color: #ccc;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 2px 4px;
+    border-radius: 4px;
+    transition: 0.15s;
+}
+ 
+.recent-remove:hover {
+    color: #e05;
+    background: #fff0f0;
+}
+ 
+/* 즐겨찾기 버튼 */
+.section-title-wrap {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 22px;
+}
+ 
+/* section-title 에서 margin-bottom 제거 (wrap이 대신 처리) */
+.section-title-wrap .section-title {
+    margin-bottom: 0;
+}
+ 
+.btn-favorite {
+    padding: 6px 14px;
+    font-size: 13px;
+    border-radius: 20px;
+    border: 1px solid #ddd;
+    background: #fff;
+    color: #aaa;
+    cursor: pointer;
+    transition: 0.2s;
+    font-weight: 500;
+}
+ 
+.btn-favorite:hover {
+    border-color: #f5a623;
+    color: #f5a623;
+}
+ 
+.btn-favorite.active {
+    background: #fff8e7;
+    border-color: #f5a623;
+    color: #f5a623;
 }
 </style>
