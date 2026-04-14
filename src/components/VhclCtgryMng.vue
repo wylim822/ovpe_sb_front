@@ -1146,18 +1146,7 @@ export default {
 
 
 <style scoped>
-.wrap {
-  margin: 0 auto;
-  width: 90%;
-}
-.content {
-  padding: 0px 40px 30px 40px;
-}
-.page-title {
-  font-size: 26px;
-  font-weight: 700;
-  margin-bottom: 28px;
-}
+@import '../assets/css/vhclCtgry.css';
 
 /* 그리드 영역 */
 .grid-row {
@@ -1166,10 +1155,10 @@ export default {
   margin-bottom: 30px;
 }
 .row-1st {
-  grid-template-columns: 55% 45%;
+  grid-template-columns: 50% 50%;
 }
 .row-2nd {
-  grid-template-columns: 45% 55%;
+  grid-template-columns: 50% 50%;
 }
 .grid-section {
   margin-bottom: 10px;
@@ -1177,11 +1166,6 @@ export default {
 .grid-box {
   width: 100%;
   /* border: 1px solid #ddd; */
-}
-.disabled {
-  opacity: 0.4;
-  pointer-events: none;
-  filter: grayscale(0.2);
 }
 /* 그리드 행 스타일 적용 (신규, 수정, 삭제) */
 /* AG Grid 기본 선택 배경색(파란색) 강제 제거 */

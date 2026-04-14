@@ -7,6 +7,7 @@ import VhclSrch from '../components/VhclSrch.vue';      // 차량번호 검색
 import VhclAnlsOld from '../components/VhclAnls.vue';   // 차량분석(old)
 import VhclCtgryMng from '../components/VhclCtgryMng.vue'; // 차량 카테고리 관리
 import VhclCtgrySrch from '../components/VhclCtgrySrch.vue'; // 차량 카테고리 조회
+import '../assets/css/common.css' // 공통 css
 
 // Vue에 Router 플러그인 등록
 Vue.use(Router)

@@ -50,7 +50,6 @@ export default {
 
   computed: {
     chartOption() {
-      /* 1. 분포 데이터 */
       const values = this.metricData.values
         .map(v => ({ x: Number(v.val), y: Number(v.cnt) }))
         .filter(v => Number.isFinite(v.x) && Number.isFinite(v.y))
@@ -58,76 +57,82 @@ export default {
 
       if (!values.length) return {}
 
-      /* 2. 기준값 / 내 차량 값 */
       const lim = Number(this.metricData.lim)
-
       const rawMyValue = this.metricData.myValue
       const myValue =
         rawMyValue === null || rawMyValue === undefined || rawMyValue === ''
           ? null
           : Number(rawMyValue)
-
       const hasMyValue = Number.isFinite(myValue)
 
-      /* 3. bin 간격 기반 범위 계산 */
-      const binGap =
-        values.length > 1 ? values[1].x - values[0].x : 0
-
+      const binGap = values.length > 1 ? values[1].x - values[0].x : 0
       const rangeMin = values[0].x - binGap / 2
       const rangeMax = values[values.length - 1].x + binGap / 2
-
       const isOutOfRange =
-        hasMyValue &&
-        myValue !== 0 &&
+        hasMyValue && myValue !== 0 &&
         (myValue < rangeMin || myValue > rangeMax)
 
-      /* 4. bin 간격 기준으로 bar 폭을 제한 */ 
-      const BAR_MIN_WIDTH = 30    // px
+      const BAR_MIN_WIDTH = 30
       const BAR_MAX_WIDTH = binGap > 0 ? binGap * 0.8 : 20
+
+      // 막대 색상: 기준 초과는 빨강, 내 차량 위치는 초록, 나머지는 파랑
+      const getColor = (val) => {
+        if (val > lim) return '#f87171'
+        if (hasMyValue && Math.abs(val - myValue) <= binGap / 2) return '#34d399'
+        return '#93c5fd'
+      }
 
       return {
         title: {
-          text: `${this.metricData.metric} 측정값 비교`,
+          text: `${this.metricData.metric} 분포`,
           subtext: hasMyValue
-            ? '다른 차량들의 분포 속에서 내 차량 위치를 확인해보세요'
-            : '다른 차량들의 측정값 분포를 확인해보세요',
-          left: 'center'
+            ? isOutOfRange
+              ? '⚠ 내 차량은 일반적인 분포 범위를 벗어났습니다'
+              : '✔ 내 차량 위치가 초록색으로 표시됩니다'
+            : '다른 차량들의 측정값 분포',
+          left: 'center',
+          top: 8,
+          textStyle: {
+            fontSize: 15,
+            fontWeight: 'bold',
+            color: '#1b2638'
+          },
+          subtextStyle: {
+            fontSize: 12,
+            color: isOutOfRange ? '#ef4444' : '#6b7280'
+          }
         },
 
         tooltip: {
           trigger: 'item',
+          backgroundColor: '#fff',
+          borderColor: '#e5e7eb',
+          borderWidth: 1,
+          textStyle: { color: '#1b2638', fontSize: 13 },
           formatter: p => {
             if (p.componentType === 'markLine') {
-              const isMyCar = p.data.lineStyle?.color === '#22c55e'
-
-              return isMyCar
-                ? `
-                  <b>내 차량 측정값</b><br/>
-                  현재 값: ${p.data.xAxis}<br/>
-                  ${
-                    isOutOfRange
-                      ? '다른 차량 분포에서는 거의 나타나지 않는 값이에요'
-                      : '다른 차량들과 비슷한 범위에 있어요'
-                  }
-                `
-                : `
-                  <b>기준값</b><br/>
-                  이 값을 넘으면 기준 초과로 판단돼요
-                `
+              const isMyCar = p.data.lineStyle?.color === '#10b981'
+              if (isMyCar) {
+                return `<div style="font-weight:600;margin-bottom:4px">🚗 내 차량</div>
+                  측정값: <b>${p.data.xAxis}</b><br/>
+                  ${isOutOfRange
+                    ? '<span style="color:#ef4444">분포 범위를 벗어난 값이에요</span>'
+                    : '<span style="color:#10b981">정상 분포 범위 내에 있어요</span>'}`
+              }
+              return `<div style="font-weight:600;margin-bottom:4px">⚠ 기준값</div>
+                이 값(<b>${lim}</b>)을 초과하면 기준 초과로 판정돼요`
             }
-
-            return `
-              <b>다른 차량들은 보통 이 값이에요</b><br/>
-              측정값 구간: ${p.value[0]}<br/>
-              해당 차량 수: ${p.value[1]}대
-            `
+            return `<div style="font-weight:600;margin-bottom:4px">📊 분포 현황</div>
+              측정값 구간: <b>${p.value[0]}</b><br/>
+              해당 차량 수: <b>${p.value[1]}대</b>`
           }
         },
 
         grid: {
-          left: 50,
-          right: 30,
-          bottom: 70,
+          left: 16,
+          right: 24,
+          bottom: 60,
+          top: 80,
           containLabel: true
         },
 
@@ -135,13 +140,19 @@ export default {
           type: 'value',
           name: '측정값',
           nameLocation: 'middle',
-          nameGap: 35
+          nameGap: 30,
+          nameTextStyle: { color: '#6b7280', fontSize: 12 },
+          axisLine: { lineStyle: { color: '#e5e7eb' } },
+          splitLine: { lineStyle: { color: '#f3f4f6' } }
         },
 
         yAxis: {
           type: 'value',
           name: '차량 수',
-          minInterval: 1
+          nameTextStyle: { color: '#6b7280', fontSize: 12 },
+          minInterval: 1,
+          axisLine: { show: false },
+          splitLine: { lineStyle: { color: '#f3f4f6', type: 'dashed' } }
         },
 
         series: [
@@ -151,41 +162,45 @@ export default {
             barMaxWidth: BAR_MAX_WIDTH,
             data: values.map(v => [v.x, v.y]),
             itemStyle: {
-              color: p => (p.value[0] > lim ? '#ef4444' : '#60a5fa')
+              color: p => getColor(p.value[0]),
+              borderRadius: [4, 4, 0, 0]   // 막대 상단 모서리 둥글게
             },
-
+            emphasis: {
+              itemStyle: {
+                shadowBlur: 8,
+                shadowColor: 'rgba(0,0,0,0.15)'
+              }
+            },
             markLine: {
               symbol: 'none',
+              animation: false,
               data: [
                 {
                   xAxis: lim,
-                  lineStyle: {
-                    type: 'dashed',
-                    width: 2,
-                    color: '#9ca3af'
-                  },
+                  lineStyle: { type: 'dashed', width: 2, color: '#9ca3af' },
                   label: {
-                    formatter: '이 선을 넘으면 기준 초과',
-                    position: 'end'
+                    formatter: `기준값 ${lim}`,
+                    position: 'insideEndTop',
+                    backgroundColor: '#f3f4f6',
+                    padding: [3, 6],
+                    borderRadius: 4,
+                    color: '#374151',
+                    fontSize: 11
                   }
                 },
-                ...(hasMyValue
-                  ? [
-                      {
-                        xAxis: myValue,
-                        lineStyle: {
-                          width: 2,
-                          color: '#22c55e'
-                        },
-                        label: {
-                          formatter: isOutOfRange
-                            ? '내 차량은 분포 범위 밖에 있어요'
-                            : '내 차량은 이 위치에 있어요',
-                          position: 'end'
-                        }
-                      }
-                    ]
-                  : [])
+                ...(hasMyValue ? [{
+                  xAxis: myValue,
+                  lineStyle: { width: 2, color: '#10b981', type: 'solid' },
+                  label: {
+                    formatter: `내 차량 ${myValue}`,
+                    position: 'insideEndTop',
+                    backgroundColor: isOutOfRange ? '#fef2f2' : '#ecfdf5',
+                    padding: [3, 6],
+                    borderRadius: 4,
+                    color: isOutOfRange ? '#ef4444' : '#10b981',
+                    fontSize: 11
+                  }
+                }] : [])
               ]
             }
           }
@@ -199,6 +214,6 @@ export default {
 <style scoped>
 .metric-chart {
   width: 100%;
-  height: 280px;
+  height: 320px;
 }
 </style>

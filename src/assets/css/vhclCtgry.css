@@ -1,0 +1,113 @@
+/* ================================================
+   vhclCtgry.css
+   VhclCtgryMng.vue, VhclCtgrySrch.vue 공통 스타일
+================================================ */
+
+/* ===============================
+   그리드 제목 (파란 세로선 + 텍스트 + 선택명)
+================================*/
+.grid-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.title-text {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.grid-title .line {
+  width: 4px;
+  height: 20px;
+  background: #1e90ff;
+  border-radius: 4px;
+}
+
+.selected-name {
+  color: #1e90ff;
+  font-weight: 600;
+}
+
+/* ===============================
+   버튼 영역
+================================*/
+.btn-area {
+  display: flex;
+  gap: 6px;
+}
+
+button {
+  padding: 4px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: 10px;
+  cursor: pointer;
+  border: 1px solid #ddd;
+  background: #fff;
+  transition: all 0.2s;
+}
+
+.btn-add {
+  padding: 8px 20px;
+  background: #1e90ff;
+  border-color: #1e90ff;
+  color: #fff;
+}
+
+.btn-add:hover {
+  background: #1878d8;
+}
+
+.btn-del {
+  padding: 8px 20px;
+  background: #ff4d4f;
+  color: #fff;
+  border-color: #ff4d4f;
+}
+
+.btn-del:hover {
+  background: #dd3b3e;
+}
+
+.btn-del:disabled,
+.btn-save:disabled,
+.btn-cancel:disabled {
+  opacity: 0.4;
+  pointer-events: none;
+  filter: grayscale(0.2);
+}
+
+.btn-save {
+  padding: 8px 20px;
+  background: #2ecc71;
+  border-color: #2ecc71;
+  color: #fff;
+}
+
+.btn-save:hover {
+  background: #27ae60;
+}
+
+.btn-cancel {
+  padding: 8px 20px;
+  color: #2a2a2a;
+  border-color: #2a2a2a;
+}
+
+.btn-cancel:hover {
+  background: #c9c9c9;
+}
+
+/* ===============================
+   비활성화 섹션
+================================*/
+.disabled {
+  opacity: 0.4;
+  pointer-events: none;
+  filter: grayscale(0.2);
+}

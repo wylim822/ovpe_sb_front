@@ -4,7 +4,6 @@
     <!-- Hero 영역 -->
     <section class="hero">
       <div class="hero-inner">
-
         <h1 class="title flicker">
           내 차, 객관적으로 평가해볼까?
         </h1>
@@ -436,67 +435,19 @@
           </div>
 
           <!-- API 호출 결과 (최종 분석) -->
-          <div v-if="anlsMsg !== ''" style="white-space: pre-wrap; line-height: 1.6;margin-top:20px">
+          <div v-if="anlsMsg !== ''" class="ai-result" style="white-space: pre-wrap; line-height: 1.6;margin-top:20px">
             <!-- <div class="info-key" style="font-size:18px">· AI 분석결과</div>
             {{ anlsMsg }} -->
-
-            <div class="info-key" style="font-size:18px;margin-top:30px;">· 종합평가</div>
-            <ul style="list-style:none;">
-              <li>
-                <span>{{ anlsMsg.ovrlEvl }}</span>
-              </li>
-            </ul>
-            
-            <div class="info-key" style="font-size:18px;margin-top:30px;">· 종합등급</div>
-            <ul style="list-style:none;">
-              <li>
-                <span>{{ anlsMsg.ovrlGrd }}</span>
-              </li>
-            </ul>
-            
-            <div class="info-key" style="font-size:18px;margin-top:30px;">· 향후 5년 운행 시 예상 변화</div>
-            <ul style="list-style:none;">
-              <li>
-                <span>{{ anlsMsg.expcChg }}</span>
-              </li>
-            </ul>
-            
-            <div class="info-key" style="font-size:18px;margin-top:30px;">· 정비·관리 권장사항</div>
-            <ul style="list-style:none;">
-              <li>
-                <span>{{ anlsMsg.mntn }}</span>
-              </li>
-            </ul>
-
-            <div class="info-key" style="font-size:18px">· 배출가스 분석</div>
-            <ul style="list-style:none;">
-              <li>
-                <span>{{ anlsMsg.emisAnls }}</span>
-              </li>
-            </ul>
-
-            <div class="info-key" style="font-size:18px;margin-top:30px;" >· 실질연식 및 연식이득</div>
-            <ul style="list-style:none;">
-              <li>
-                <span>{{ anlsMsg.ageExpln }}</span>
-              </li>
-            </ul>
-
-            <div class="info-key" style="font-size:18px;margin-top:30px;" >· 방사형 그래프 해석</div>
-            <ul style="list-style:none;">
-              <li>
-                <span>{{ anlsMsg.graphExpln }}</span>
-              </li>
-            </ul>
-
-            <div class="info-key" style="font-size:18px;margin-top:30px;">· 잔존가치 해석</div>
-            <ul style="list-style:none;">
-              <li>
-                <span>{{ anlsMsg.rmnVal }}</span>
-              </li>
-            </ul>
-
-            <div style="margin-top:70px;font-weight:bold;text-align: center">*** {{ anlsMsg.notice }} ***</div>
+            <div v-html="toHtml(anlsMsg.ovrlEvl)"></div>
+            <div v-html="toHtml(anlsMsg.ovrlGrd)"></div>
+            <div v-html="toHtml(anlsMsg.expcChg)"></div>
+            <div v-html="toHtml(anlsMsg.mntn)"></div>
+            <div v-html="toHtml(anlsMsg.emisAnls)"></div>
+            <div v-html="toHtml(anlsMsg.ageExpln)"></div>
+            <RadarChart :graphExpln="anlsMsg.graphExpln" />
+            <div v-html="toHtml(anlsMsg.graphExpln)"></div>
+            <div v-html="toHtml(anlsMsg.rmnVal)"></div>
+            <div style="margin-top:70px;font-weight:bold;text-align:center">*** {{ anlsMsg.notice }} ***</div>
           </div>
         </div>
         
@@ -524,12 +475,21 @@
 <script>
 import vhclApi from '../services/vhclApi'
 import MetricBarChart from '@/components/charts/MetricBarChart.vue'
+import RadarChart from '@/components/charts/RadarChart.vue'
 import storageUtil from '../services/storageUtil'
+import { marked } from 'marked'
+
+// marked 옵션 설정 (표 지원 활성화)
+marked.setOptions({
+    breaks: true,    // \n을 <br>로 자동 변환
+    gfm: true        // GitHub Flavored Markdown 활성화 (표 지원 포함)
+})
 
 export default {
   name: "VhclAnls",
   components: {
-    MetricBarChart
+    MetricBarChart,
+    RadarChart
   },
   data() {
     return {
@@ -855,6 +815,12 @@ export default {
         })
         // ✅ 검사년도 오름차순 정렬
         .sort((a, b) => a.year.localeCompare(b.year));
+    },
+    toHtml() {
+      return function(text) {
+          if (!text) return ''
+          return marked(String(text))
+      }
     }
   }
 }
@@ -862,389 +828,7 @@ export default {
 
 
 <style scoped>
-/* ===============================
-   기본 레이아웃
-================================*/
-.wrap {
-  max-width: 1080px;
-  margin: 0 auto;
-  padding-bottom: 60px;
-}
-
-/* ===============================
-   HERO 영역
-================================*/
-.hero {
-  color: #fff;
-  padding: 40px 20px 80px;
-  text-align: center;
-  overflow: visible;
-}
-
-.hero-inner {
-  max-width: 900px;
-  margin: 0 auto;
-}
-
-.title {
-  font-size: 38px;
-  font-weight: 700;
-  margin-bottom: 20px;
-  letter-spacing: -0.5px;
-  color: #333;
-}
-
-.flicker {
-  animation: flicker 2.5s ease-out forwards;
-}
-
-@keyframes flicker {
-  0% { opacity: 0; transform: translateY(20px); }
-  15% { opacity: 1; transform: translateY(0); }
-  40% { opacity: 0.9; }
-  100% { opacity: 1; }
-}
-
-.subtitle {
-  font-size: 17px;
-  opacity: 0.85;
-  margin-bottom: 40px;
-  color: #333;
-}
-
-/* ===============================
-   번호판 박스
-================================*/
-.plate-box {
-  display: flex;
-  gap: 10px;
-  /*background: #141414;*/
-  padding: 22px;
-  border-radius: 14px;
-  align-items: center;
-  /*box-shadow: 0 0 40px rgba(0, 180, 255, 0.15);*/
-  animation: glow 3s infinite alternate;
-}
-
-@keyframes glow {
-  0% { box-shadow: 0 0 20px rgba(50, 150, 255, 0.1); }
-  100% { box-shadow: 0 0 40px rgba(50, 150, 255, 0.25); }
-}
-
-.plate-input {
-  flex: 1;
-  padding: 18px;
-  font-size: 20px;
-  border-radius: 10px;
-  border: 1px solid #ddd;
-  background: #fff;
-  transition: 0.25s ease;
-}
-
-.plate-input:focus {
-  box-shadow: 0 0 10px rgba(70, 170, 255, 0.4);
-  transform: scale(1.02);
-}
-
-.btn-search {
-  background: #1e90ff;
-  color: white;
-  padding: 14px 28px;
-  font-size: 18px;
-  border-radius: 10px;
-  border: none;
-  cursor: pointer;
-  transition: 0.2s;
-}
-.btn-search:hover {
-  background: #1878d8;
-}
-
-.btn-api-wrap {
-  margin-top: 10px;
-  text-align: right;
-}
-
-.btn-api {
-  background: #1e90ff;
-  color: #fff;
-  padding: 8px 14px;
-  font-size: 14px;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-  transition: 0.2s ease;
-}
-.btn-api:hover {
-  background: #1878d8;
-}
-
-/* ===============================
-   페이드 애니메이션
-================================*/
-.fade-up {
-  opacity: 0;
-  transform: translateY(20px);
-  animation: fadeUp 0.9s forwards;
-}
-
-.delay-1 { animation-delay: 0.3s; }
-.delay-2 { animation-delay: 0.6s; }
-
-@keyframes fadeUp {
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* ===============================
-   결과 카드
-================================*/
-.result-container {
-  margin-top: -40px;
-  padding: 0 20px;
-  position: relative;
-  z-index: 1;
-}
-
-.info-card {
-  background: #fff;
-  padding: 30px 24px;
-  border-radius: 16px;
-  box-shadow: 0 4px 14px rgba(0,0,0,0.08);
-  margin-bottom: 32px;
-  min-width: 0;
-}
-
-/* 제목 */
-.section-title {
-  font-size: 20px;
-  font-weight: 700;
-  margin-bottom: 22px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.section-title .line {
-  width: 4px;
-  height: 20px;
-  background: #1e90ff;
-  border-radius: 4px;
-}
-
-/* ===============================
-   차량 등록 정보 테이블
-================================*/
-.info-table {
-  display: grid;
-  grid-template-columns: 180px 1fr 180px 1fr;  /* 4열 구조 */
-  row-gap: 10px;
-  column-gap: 22px;
-  padding: 8px 0 4px;
-  border-top: 1px solid #e8eef4;
-}
-
-.info-table.grid-4 {
-  display: grid;
-  grid-template-columns: 180px 1fr 180px 1fr;  /* 4열 구조 */
-  column-gap: 22px;
-  row-gap: 14px;
-  padding: 8px 0 4px;
-}
-
-.info-row {
-  display: contents;
-}
-
-.info-key {
-  font-weight: 600;
-  color: #1b2638; /* 더 차분한 파란빛 그레이 */
-  font-size: 15px;
-  padding: 6px 0;
-  align-items: center;
-  border-bottom: 1px solid #f3f5f7;
-}
-
-.info-value {
-  padding: 6px 0;
-  align-items:center;
-  border-bottom: 1px solid #f3f5f7;
-}
-
-/* 줄 사이를 구분하는 subtle hover 효과 */
-/*.info-row:hover .info-key,
-.info-row:hover .info-value {
-  background: #f9fbff;
-}*/
-
-/* ===============================
-   기타 정보
-================================*/
-.ai-report {
-  white-space: pre-line;
-  line-height: 1.6;
-}
-
-/* Placeholder */
-.placeholder {
-  padding: 40px 20px;
-  text-align: center;
-  color: #888;
-  font-size: 17px;
-}
-
-/* Loading */
-.loading {
-  text-align: center;
-  padding: 40px;
-  font-size: 18px;
-}
-
-/* 반응형 */
-@media (max-width: 600px) {
-  .title { font-size: 28px; }
-  .plate-input { font-size: 16px; padding: 14px; }
-  .info-table { grid-template-columns: 1fr; }
-}
-
-/* ===============================
-   차량 검사 정보 스크롤 테이블
-================================*/
-.insp-scroll-wrapper {
-  overflow-x: auto;
-  overflow-y: auto;
-  max-height: 280px;
-  border: 1px solid #e5ecf3;
-  border-radius: 10px;
-}
-
-/* 공통 테이블 */
-.insp-table {
-  display: grid;
-  grid-template-columns: repeat(68, minmax(120px, max-content));
-  min-width: max-content;
-}
-
-/* 테이블 헤더 */
-.insp-table .th {
-  background: #f1f6fc;
-  font-weight: 700;
-  position: sticky;
-  top: 0;
-  z-index: 2;
-}
-
-/* 테이블 셀 공통 */
-.insp-table .cell {
-  padding: 12px 10px;
-  font-size: 14px;
-  border-bottom: 1px solid #eef2f6;
-  border-right: 1px solid #eef2f6;
-  white-space: nowrap;
-}
-
-.insp-table .cell:last-child {
-  border-right: none;
-}
-
-.insp-row {
-  display: contents;
-  grid-template-columns: repeat(68, minmax(120px, max-content));
-}
-
-.insp-row:hover .cell {
-  background: #f5f9ff;
-  transition: 0.15s;
-}
-
-.empty-msg {
-  padding: 20px;
-  text-align: center;
-  color: #888;
-  font-size: 14px;
-  background: #fafafa;
-  border-radius: 8px;
-  border: 1px solid #eee;
-}
-
-.apiText {
-  width: 100%;
-  resize: vertical;
-  font-size: 15px;
-  font-family: inherit;
-  line-height: 1.5;
-  border-radius: 6px;
-  border: 1px solid #dcdcdc;
-  background: #fff;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-/* AI 분석 로딩 */
-.spinner {
-  width: 58px;
-  height: 58px;
-  border: 6px solid #ccc;
-  border-top-color: #1e90ff;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-
-.loading-anls {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 60px 20px;
-  color: #555;
-}
-
-.loading-text {
-  margin-top: 16px;
-  font-size: 16px;
-  font-weight: 500;
-}
-
-/* ===============================
-   배출가스 분석 결과 테이블
-================================*/
-.emis-table {
-  display: grid;
-  grid-template-columns: 140px 180px 100px 160px 140px;
-  width: fit-content;
-  margin: 0 auto;
-  padding-top: 10px
-}
-
-.emis-table .insp-row {
-  display: contents;
-}
-
-.emis-table .cell {
-  padding: 10px 8px;
-  font-size: 14px;
-  border-bottom: 1px solid #eef2f6;
-  border-right: 1px solid #eef2f6;
-}
-
-.emis-table .cell:last-child {
-  border-right: none;
-}
-
-.emis-table .th {
-  background: #f1f6fc;
-  font-weight: 700;
-}
-/* ===============================
-   차량 검사 이력 요약 테이블
-================================*/
-.insp-summary-table {
-  grid-template-columns:
-    100px   /* 검사년도 */
-    120px   /* 주행거리 */
-    repeat(11, minmax(120px, max-content));
-}
+@import '../assets/css/vhclAnls.css';
 
 /* 검색창 래퍼 (드롭다운 기준점) */
 .search-wrapper {
@@ -1376,5 +960,33 @@ export default {
     background: #fff8e7;
     border-color: #f5a623;
     color: #f5a623;
+}
+
+/* marked 마크다운 렌더링 스타일 */
+:deep(table) {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 12px 0;
+    font-size: 14px;
+}
+:deep(th), :deep(td) {
+    border: 1px solid #ddd;
+    padding: 8px 12px;
+    text-align: left;
+}
+:deep(th) {
+    background: #f1f6fc;
+    font-weight: 600;
+}
+:deep(tr:hover) {
+    background: #f9fbff;
+}
+:deep(strong) {
+    font-weight: 700;
+    color: #1b2638;
+}
+:deep(p) {
+    margin: 6px 0;
+    line-height: 1.7;
 }
 </style>

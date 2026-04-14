@@ -5,7 +5,7 @@
     <main class="content">
       <h1 class="page-title">차량 카테고리 조회</h1>
 
-      <div class="filter-card">
+      <div class="search-panel">
         <div class="filter-box">
 
           <!-- 제조사 -->
@@ -41,9 +41,9 @@
             </select>
           </div>
 
-          <!-- 트림(등급) -->
+          <!-- 등급(트림) -->
           <div class="filter-item">
-            <label class="filter-label">트림(등급) <span class="optional">(선택)</span></label>
+            <label class="filter-label">등급 <span class="optional">(선택)</span></label>
             <select class="filter-select" v-model="selectedTrimId" :disabled="!selectedDetailId">
               <option value="">전체</option>
               <option v-for="trim in trimList" :key="trim.trimId" :value="trim.trimId">
@@ -429,85 +429,10 @@ export default {
 </script>
 
 <style scoped>
-.wrap {
-  margin: 0 auto;
-  width: 90%;
-}
-.content {
-  padding: 0px 40px 30px 40px;
-}
-.page-title {
-  font-size: 26px;
-  font-weight: 700;
-  margin-bottom: 28px;
-}
-
+@import '../assets/css/vhclCtgry.css';
 /* ===============================
    필터 카드
 ================================*/
-.filter-card {
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.07);
-  padding: 24px;
-  margin-bottom: 28px;
-}
-
-.filter-box {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 14px;
-  align-items: flex-end;
-}
-
-.filter-item {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  flex: 1;
-  min-width: 150px;
-}
-
-.btn-item {
-  flex: 0 0 auto;
-  min-width: auto;
-}
-
-.filter-label {
-  font-size: 13px;
-  font-weight: 600;
-  color: #555;
-}
-
-.optional {
-  font-weight: 400;
-  color: #aaa;
-  font-size: 12px;
-}
-
-.filter-select {
-  padding: 10px 12px;
-  font-size: 14px;
-  border-radius: 8px;
-  border: 1px solid #ddd;
-  background: #fff;
-  color: #333;
-  cursor: pointer;
-  transition: border-color 0.2s, box-shadow 0.2s;
-}
-
-.filter-select:focus {
-  outline: none;
-  border-color: #1e90ff;
-  box-shadow: 0 0 0 3px rgba(30, 144, 255, 0.1);
-}
-
-.filter-select:disabled {
-  background: #f5f5f5;
-  color: #bbb;
-  cursor: not-allowed;
-}
-
 .btn-search {
   padding: 10px 28px;
   background: #1e90ff;
@@ -721,40 +646,6 @@ export default {
 .page-btn:disabled {
   color: #ccc;
   cursor: not-allowed;
-}
-
-/* ===============================
-   공통
-================================*/
-.loading {
-  text-align: center;
-  padding: 40px;
-  font-size: 15px;
-  color: #777;
-}
-
-.error-msg {
-  text-align: center;
-  padding: 16px;
-  color: #e74c3c;
-  font-size: 14px;
-}
-
-.empty-msg {
-  padding: 40px;
-  text-align: center;
-  color: #888;
-  font-size: 14px;
-  background: #fafafa;
-  border-radius: 8px;
-  border: 1px solid #eee;
-}
-
-.placeholder {
-  padding: 60px 20px;
-  text-align: center;
-  color: #aaa;
-  font-size: 15px;
 }
 
 /* ===============================

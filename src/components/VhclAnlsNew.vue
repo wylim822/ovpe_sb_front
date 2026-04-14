@@ -14,62 +14,42 @@
 
             <!-- 차량정보 selectbox -->
             <section class="search-panel">
-                <div class="field">
-                <label>[ 제작사 ]</label>
-                <select v-model="maker" @change="onChangeMaker" style="width:200px">
-                    <option value="">제작사를 선택하세요</option>
+              <div class="filter-box">
+
+                <div class="filter-item">
+                  <label class="filter-label">제작사</label>
+                  <select class="filter-select" v-model="maker" @change="onChangeMaker">
+                    <option value="">선택하세요</option>
                     <option v-for="m in makerList" :key="m.makerId" :value="m.makerId">{{ m.makerName }}</option>
-                </select>
+                  </select>
                 </div>
 
-                <div class="field">
-                <label>[ 모델 ]</label>
-                <select v-model="model" @change="onChangeModel" :disabled="!maker">
-                    <template v-if="modelList.length === 0">
-                        <option value="">
-                        제조사를 선택하세요
-                        </option>
-                    </template>
-
-                    <template v-else>
-                        <option value="">모델</option>
-                        <option v-for="m in modelList" :key="m.modelId" :value="m.modelId">{{ m.modelName }}</option>
-                    </template>
-                </select>
+                <div class="filter-item">
+                  <label class="filter-label">모델</label>
+                  <select class="filter-select" v-model="model" @change="onChangeModel" :disabled="!maker">
+                    <option value="">선택하세요</option>
+                    <option v-for="m in modelList" :key="m.modelId" :value="m.modelId">{{ m.modelName }}</option>
+                  </select>
                 </div>
 
-                <div class="field">
-                <label>[ 세부모델 ]</label>
-                <select v-model="detailModel" @change="onChangeDetailModel" :disabled="!model">
-                    <template v-if="detailModelList.length === 0">
-                        <option value="">
-                        모델을 선택하세요
-                        </option>
-                    </template>
-
-                    <template v-else>
-                        <option value="">세부모델</option>
-                        <option v-for="d in detailModelList" :key="d.detailId" :value="d">{{ d.detailName }}</option>
-                    </template>
-                </select>
+                <div class="filter-item">
+                  <label class="filter-label">세부모델</label>
+                  <select class="filter-select" v-model="detailModel" @change="onChangeDetailModel" :disabled="!model">
+                    <option value="">선택하세요</option>
+                    <option v-for="d in detailModelList" :key="d.detailId" :value="d">{{ d.detailName }}</option>
+                  </select>
                 </div>
 
-                <div class="field">
-                <label>[ 등급 ]</label>
-                <select v-model="trim" @change="onChangeTrim" :disabled="!detailModel">
-                    <template v-if="trimList.length === 0">
-                        <option value="">
-                        세부모델을 선택하세요
-                        </option>
-                    </template>
-
-                    <template v-else>
-                        <option value="">등급</option>
-                        <option v-for="t in trimList" :key="t.trimId" :value="t">{{ t.trimName }}</option>
-                    </template>
-                </select>
+                <div class="filter-item">
+                  <label class="filter-label">등급</label>
+                  <select class="filter-select" v-model="trim" @change="onChangeTrim" :disabled="!detailModel">
+                    <option value="">선택하세요</option>
+                    <option v-for="t in trimList" :key="t.trimId" :value="t">{{ t.trimName }}</option>
+                  </select>
                 </div>
-            </section>     
+
+              </div>
+            </section>
 
             <!-- 차량정보&검사정보 input -->
             <section class="info-card input-panel">
@@ -142,7 +122,7 @@
                     <tr>
                       <th colspan="2">검사방법 <span class="required">*</span></th>
                       <td colspan="2">
-                        <select v-model="vhclInput.inspectionMethod" style="width:30%" ref="inspectionMethodInput">
+                        <select v-model="vhclInput.inspectionMethod" style="width:25%" ref="inspectionMethodInput">
                           <option value="">검사방법 선택</option>
                           <option value="부하검사(ASM-Idling)">부하검사(ASM-Idling)</option>
                           <option value="무부하검사(정지가동)">무부하검사(정지가동)</option>
@@ -918,411 +898,7 @@ export default {
 
 
 <style scoped>
-/* ===============================
-   기본 레이아웃
-================================*/
-.wrap {
-  /* max-width: 1080px; */
-  margin: 0 auto;
-  /* padding-bottom: 60px; */
-  width: 70%;
-}
-
-/* ===============================
-   HERO 영역
-================================*/
-.hero {
-  /* background: linear-gradient(to bottom, rgba(12,12,12,1) 50%, rgba(12,12,12,0.0) 100%); */
-  color: #fff;
-  padding: 40px 20px 80px;
-  text-align: center;
-  overflow: hidden;
-}
-
-.hero-inner {
-  /* max-width: 900px; */
-  margin: 0 auto;
-}
-
-.title {
-  font-size: 38px;
-  font-weight: 700;
-  margin-bottom: 20px;
-  letter-spacing: -0.5px;
-  color: #333;
-}
-
-.flicker {
-  animation: flicker 2.5s ease-out forwards;
-}
-
-@keyframes flicker {
-  0% { opacity: 0; transform: translateY(20px); }
-  15% { opacity: 1; transform: translateY(0); }
-  40% { opacity: 0.9; }
-  100% { opacity: 1; }
-}
-
-.subtitle {
-  font-size: 17px;
-  opacity: 0.85;
-  margin-bottom: 40px;
-  color: #333;
-}
-
-/* ===============================
-   번호판 박스
-================================*/
-.plate-box {
-  display: flex;
-  gap: 10px;
-  /*background: #141414;*/
-  padding: 22px;
-  border-radius: 14px;
-  align-items: center;
-  /*box-shadow: 0 0 40px rgba(0, 180, 255, 0.15);*/
-  animation: glow 3s infinite alternate;
-}
-
-@keyframes glow {
-  0% { box-shadow: 0 0 20px rgba(50, 150, 255, 0.1); }
-  100% { box-shadow: 0 0 40px rgba(50, 150, 255, 0.25); }
-}
-
-.plate-input {
-  flex: 1;
-  padding: 18px;
-  font-size: 20px;
-  border-radius: 10px;
-  border: 1px solid #ddd;
-  background: #fff;
-  transition: 0.25s ease;
-}
-
-.plate-input:focus {
-  box-shadow: 0 0 10px rgba(70, 170, 255, 0.4);
-  transform: scale(1.02);
-}
-
-.btn-search {
-  background: #1e90ff;
-  color: white;
-  padding: 14px 28px;
-  font-size: 18px;
-  border-radius: 10px;
-  border: none;
-  cursor: pointer;
-  transition: 0.2s;
-}
-.btn-search:hover {
-  background: #1878d8;
-}
-
-
-/* ===============================
-   페이드 애니메이션
-================================*/
-.fade-up {
-  opacity: 0;
-  transform: translateY(20px);
-  animation: fadeUp 0.9s forwards;
-}
-
-.delay-1 { animation-delay: 0.3s; }
-.delay-2 { animation-delay: 0.6s; }
-
-@keyframes fadeUp {
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* ===============================
-   결과 카드
-================================*/
-.result-container {
-  margin-top: -40px;
-  padding: 0 20px;
-}
-
-.info-card {
-  background: #fff;
-  padding: 30px 24px;
-  border-radius: 16px;
-  box-shadow: 0 4px 14px rgba(0,0,0,0.08);
-  margin-bottom: 32px;
-  min-width: 0;
-}
-
-/* 제목 */
-.section-title {
-  font-size: 20px;
-  font-weight: 700;
-  margin-bottom: 22px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.section-title .line {
-  width: 4px;
-  height: 20px;
-  background: #1e90ff;
-  border-radius: 4px;
-}
-
-/* ===============================
-   차량 등록 정보 테이블
-================================*/
-.info-table {
-  display: grid;
-  grid-template-columns: 180px 1fr 180px 1fr;  /* 4열 구조 */
-  row-gap: 10px;
-  column-gap: 22px;
-  padding: 8px 0 4px;
-  border-top: 1px solid #e8eef4;
-}
-
-.info-table.grid-4 {
-  display: grid;
-  grid-template-columns: 180px 1fr 180px 1fr;  /* 4열 구조 */
-  column-gap: 22px;
-  row-gap: 14px;
-  padding: 8px 0 4px;
-}
-
-.info-row {
-  display: contents;
-}
-
-.info-key {
-  font-weight: 600;
-  color: #1b2638; /* 더 차분한 파란빛 그레이 */
-  font-size: 15px;
-  padding: 6px 0;
-  align-items: center;
-  border-bottom: 1px solid #f3f5f7;
-}
-
-.info-value {
-  padding: 6px 0;
-  align-items:center;
-  border-bottom: 1px solid #f3f5f7;
-}
-
-/* 줄 사이를 구분하는 subtle hover 효과 */
-/*.info-row:hover .info-key,
-.info-row:hover .info-value {
-  background: #f9fbff;
-}*/
-
-/* ===============================
-   기타 정보
-================================*/
-.ai-report {
-  white-space: pre-line;
-  line-height: 1.6;
-}
-
-/* Placeholder */
-.placeholder {
-  padding: 40px 20px;
-  text-align: center;
-  color: #888;
-  font-size: 17px;
-}
-
-/* 반응형 */
-@media (max-width: 600px) {
-  .title { font-size: 28px; }
-  .plate-input { font-size: 16px; padding: 14px; }
-  .info-table { grid-template-columns: 1fr; }
-}
-
-/* ===============================
-   차량 검사 정보 스크롤 테이블
-================================*/
-.insp-scroll-wrapper {
-  overflow-x: auto;
-  overflow-y: auto;
-  max-height: 280px;
-  border: 1px solid #e5ecf3;
-  border-radius: 10px;
-}
-
-/* 공통 테이블 */
-.insp-table {
-  display: grid;
-  grid-template-columns: repeat(68, minmax(120px, max-content));
-  min-width: max-content;
-}
-
-/* 테이블 헤더 */
-.insp-table .th {
-  background: #f1f6fc;
-  font-weight: 700;
-  position: sticky;
-  top: 0;
-  z-index: 2;
-}
-
-/* 테이블 셀 공통 */
-.insp-table .cell {
-  padding: 12px 10px;
-  font-size: 14px;
-  border-bottom: 1px solid #eef2f6;
-  border-right: 1px solid #eef2f6;
-  white-space: nowrap;
-}
-
-.insp-table .cell:last-child {
-  border-right: none;
-}
-
-.insp-row {
-  display: contents;
-  grid-template-columns: repeat(68, minmax(120px, max-content));
-}
-
-.insp-row:hover .cell {
-  background: #f5f9ff;
-  transition: 0.15s;
-}
-
-.empty-msg {
-  padding: 20px;
-  text-align: center;
-  color: #888;
-  font-size: 14px;
-  background: #fafafa;
-  border-radius: 8px;
-  border: 1px solid #eee;
-}
-
-.apiText {
-  width: 100%;
-  resize: vertical;
-  font-size: 15px;
-  font-family: inherit;
-  line-height: 1.5;
-  border-radius: 6px;
-  border: 1px solid #dcdcdc;
-  background: #fff;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-/* AI 분석 로딩 */
-.spinner {
-  width: 58px;
-  height: 58px;
-  border: 6px solid #ccc;
-  border-top-color: #1e90ff;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-
-.loading-anls {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 60px 20px;
-  color: #555;
-}
-
-.loading-text {
-  margin-top: 16px;
-  font-size: 16px;
-  font-weight: 500;
-}
-
-/* ===============================
-   배출가스 분석 결과 테이블
-================================*/
-.emis-table {
-  display: grid;
-  grid-template-columns: 140px 180px 100px 160px 140px;
-  width: fit-content;
-  margin: 0 auto;
-  padding-top: 10px
-}
-
-.emis-table .insp-row {
-  display: contents;
-}
-
-.emis-table .cell {
-  padding: 10px 8px;
-  font-size: 14px;
-  border-bottom: 1px solid #eef2f6;
-  border-right: 1px solid #eef2f6;
-}
-
-.emis-table .cell:last-child {
-  border-right: none;
-}
-
-.emis-table .th {
-  background: #f1f6fc;
-  font-weight: 700;
-}
-/* ===============================
-   차량 검사 이력 요약 테이블
-================================*/
-.insp-summary-table {
-  grid-template-columns:
-    100px   /* 검사년도 */
-    120px   /* 주행거리 */
-    repeat(11, minmax(120px, max-content));
-}
-
-/* ===============================
-   selectbox input
-================================*/
-/* 조회 패널 */
-.search-panel {
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 30px;
-  padding: 22px;
-  background: #fff;
-  border-radius: 12px;
-  margin-bottom: 28px;
-  box-shadow: 0 4px 14px rgba(0,0,0,0.07);
-}
-.field {
-  display: flex;
-  flex-direction: column;
-}
-.field label {
-  font-size: 14px;
-  margin-bottom: 6px;
-  color: #333;
-}
-.field input,
-.field select {
-  padding: 10px 12px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  font-size: 14px;
-  width: 250px;
-}
-  
-/* .btn-search {
-  padding: 8px 26px;
-  background: #1e90ff;
-  border: none;
-  color: #fff;
-  border-radius: 10px;
-  font-size: 16px;
-  cursor: pointer;
-}
-.btn-search:hover {
-  background: #1878d8;
-} */
+@import '../assets/css/vhclAnls.css';
 
 /* ===============================
    차량정보&검사정보 입력 input
@@ -1341,7 +917,7 @@ export default {
 .input-table th,
 .input-table td {
   border: 1px solid #e5ecf3;
-  padding: 10px;
+  padding: 7px;
   font-size: 14px;
   text-align: center;
 }

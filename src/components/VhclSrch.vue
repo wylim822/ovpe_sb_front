@@ -108,7 +108,6 @@
 import { AgGridVue } from "ag-grid-vue";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
-
 import vhclApi from "../services/vhclApi";
 
 // 숫자 콤마 포맷터 (공통)
@@ -172,7 +171,7 @@ export default {
     this.subGridOptions.defaultColDef = this.defaultColDef;
 
     this.mainColDefs = [
-      { headerName: "차명", field: "vnmEng", minWidth: 120, cellClass: "wrap-cell" },
+      { headerName: "차명", field: "vnmEng", minWidth: 120, wrapText: true, autoHeight: true },
       { headerName: "연료", field: "vfulEng", minWidth: 100 },
       { headerName: "엔진형식", field: "engtEng", minWidth: 120 },
       { headerName: "연식별 차량대수", field: "cntvmyEng", minWidth: 140, valueFormatter: numberFormatter },
@@ -382,7 +381,6 @@ export default {
 </script>
 
 <style scoped>
-
 /* grid 하단 radius */
 .ag-theme-alpine {
   border-radius: 0 0 16px 16px;
@@ -396,15 +394,8 @@ export default {
 
 .content {
   padding: 32px 40px;
-  padding-left: 260px;
-  max-width: 100%;
+  max-width: 1200px;
   margin: 0 auto;
-}
-
-.page-title {
-  font-size: 26px;
-  font-weight: 700;
-  margin-bottom: 28px;
 }
 
 /* 조회 패널 */
@@ -510,19 +501,6 @@ export default {
   z-index: 2000;
 }
 
-.spinner {
-  width: 58px;
-  height: 58px;
-  border: 6px solid #ccc;
-  border-top-color: #1e90ff;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
 .ag-theme-alpine {
   --ag-font-size: 14px;
   --ag-header-height: 40px;
@@ -550,11 +528,12 @@ export default {
   width: 100%;
 }
 
-:deep(.wrap-cell) {
+/* 차명 텍스트 줄바꿈 */
+:deep(.ag-theme-alpine .ag-cell.ag-cell-auto-height) {
   white-space: normal !important;
-  line-height: 1.3;
-  justify-content: flex-start !important; /* 가독성 ↑ */
-  text-align: left !important;
+  line-height: 1.5;
+  padding-top: 8px;
+  padding-bottom: 8px;
 }
 
 .ag-theme-alpine .ag-cell {
